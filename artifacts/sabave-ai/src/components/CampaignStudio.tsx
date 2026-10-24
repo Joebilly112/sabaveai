@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, FileText, RefreshCw, Send, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, FileText, Info, RefreshCw, Send, Sparkles, XCircle } from 'lucide-react';
 import {
-  getListActivityLogQueryKey, getListDraftsQueryKey, useDecideDraft, useListDrafts, useUpdateDraft,
+  getListActivityLogQueryKey, getListDraftsQueryKey, useDecideDraft, useGetAIStatus, useListDrafts, useRegenerateDraft, useUpdateDraft,
 } from '@workspace/api-client-react';
 import type { Business, CampaignDraft, DraftUpdateChannelsItem } from '@workspace/api-client-react';
 import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
@@ -46,6 +46,9 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
   const drafts = useListDrafts({ businessId }, { query: { queryKey: getListDraftsQueryKey({ businessId }), enabled: !!businessId, refetchInterval: 5000, staleTime: 0 }, request: headers });
   const update = useUpdateDraft({ request: headers });
   const decide = useDecideDraft({ request: headers });
+  const regen = useRegenerateDraft({ request: headers });
+  const aiStatus = useGetAIStatus();
+  const aiConfigured = !!aiStatus.data?.configured;
   const list = useMemo(() => [...(drafts.data || [])], [drafts.data]);
   const draft = list.find((d) => d.id === selectedId);
 
@@ -53,7 +56,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
   const [base, setBase] = useState<Form | null>(null);
   const [error, setError] = useState<{ message: string; violations: string[] } | null>(null);
   const [notice, setNotice] = useState('');
-  const [busy, setBusy] = useState<'' | 'save' | 'submit' | 'approve' | 'reject'>('');
+  const [busy, setBusy] = useState<'' | 'save' | 'submit' | 'approve' | 'reject' | 'regen'>('');
   const [approveBudget, setApproveBudget] = useState('');
   const [reason, setReason] = useState('');
   const dirty = !!form && !same(form, base);
@@ -101,7 +104,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
     if (!form || !draft) return null;
     return {
       draftId: draft.id,
-      copy: { ...draft.copy, headline: form.headline, caption_bm: form.caption_bm, caption_en: form.caption_en, hashtags: parseTags(form.hashtags), cta: form.cta },
+      copy: { ...draft.copy, source: draft.copy.source, model: draft.copy.model, fallbackReason: draft.copy.fallbackReason, headline: form.headline, caption_bm: form.caption_bm, caption_en: form.caption_en, hashtags: parseTags(form.hashtags), cta: form.cta },
       offer: form.offer, budgetRM: Number(form.budget), channels: form.channels,
     };
   };
@@ -131,8 +134,20 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
     } catch (e) { setError(apiErrorInfo(e)); } finally { setBusy(''); }
   };
 
+  const regenerate = async () => {
+    if (!draft || !editable || dirtyRef.current || busy) return;
+    const id = draft.id;
+    setBusy('regen'); setError(null); setNotice('');
+    try {
+      const d = await regen.mutateAsync({ data: { draftId: id } });
+      if (loadedId.current !== id) { qc.setQueryData<CampaignDraft[]>(getListDraftsQueryKey({ businessId }), (old) => (old ? old.map((x) => (x.id === d.id ? d : x)) : old)); return; }
+      refresh(d);
+      setNotice(d.copy.source === 'ai' ? 'Copy rewritten with AI. Offer, budget and channels were kept.' : 'AI was unavailable, so template copy was used. Offer, budget and channels were kept.');
+    } catch (e) { if (loadedId.current === id) setError(apiErrorInfo(e)); } finally { setBusy(''); }
+  };
+
   const openDraft = (id: string) => {
-    if (id === selectedId) return;
+    if (id === selectedId || busy) return;
     if (dirtyRef.current && !window.confirm('You have unsaved edits. Discard them and open another draft?')) return;
     onSelect(id);
   };
@@ -158,7 +173,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
             <div className="empty-state small"><strong>No drafts yet</strong>Choose “Prepare campaign” on an option above.</div>
           )}
           {list.map((d) => (
-            <button key={d.id} className={`draft-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => openDraft(d.id)} data-testid={`draft-item-${d.id}`}>
+            <button key={d.id} className={`draft-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => openDraft(d.id)} disabled={!!busy && d.id !== selectedId} data-testid={`draft-item-${d.id}`}>
               <span className={`status-chip s-${d.status}`}>{STATUS_LABEL[d.status] || d.status}</span>
               <strong>{d.copy.headline || d.option.title}</strong>
               <small>{d.option.title} · RM {d.budgetRM}</small>
@@ -174,10 +189,23 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
               <div className="editor-head">
                 <div>
                   <span className={`status-chip s-${draft.status}`} data-testid="draft-status">{STATUS_LABEL[draft.status]}</span>
-                  <span className="source-pill" style={{ marginLeft: 8 }} data-testid="copy-source"><i className="source-dot" />SOURCE · {draft.copy.source.toUpperCase()}</span>
+                  <span className={`source-pill ${draft.copy.source === 'ai' ? 'ai' : ''}`} style={{ marginLeft: 8 }} data-testid="copy-source"><i className="source-dot" />{draft.copy.source === 'ai' ? `AI (DeepSeek${draft.copy.model ? ` · ${draft.copy.model}` : ''})` : 'Template'}</span>
                 </div>
                 {dirty && <span className="unsaved" data-testid="unsaved-indicator">Unsaved changes</span>}
               </div>
+
+              {draft.copy.fallbackReason && (
+                <div className="fallback-note" role="note" aria-label="AI fallback notice" data-testid="text-fallback-reason"><Info size={14} /><div><strong>Template copy used.</strong> {draft.copy.fallbackReason}</div></div>
+              )}
+
+              {editable && aiConfigured && (
+                <div className="regen-row">
+                  <button className="action-btn" onClick={regenerate} disabled={!!busy || dirty} aria-describedby="regen-help" data-testid="button-regenerate-ai">
+                    {busy === 'regen' ? <RefreshCw size={13} className="animate-spin" /> : <Sparkles size={13} />}{busy === 'regen' ? 'Rewriting with AI…' : 'Regenerate with AI'}
+                  </button>
+                  <small id="regen-help" data-testid="text-regen-help">{dirty ? 'Save first — regenerating would replace your unsaved edits.' : 'Rewrites headline, captions, hashtags and CTA only. Offer, budget and channels stay.'}</small>
+                </div>
+              )}
 
               {draft.status === 'rejected' && draft.rejectReason && (
                 <div className="reject-note"><XCircle size={14} /><div><strong>Returned by owner</strong>{draft.rejectReason}</div></div>

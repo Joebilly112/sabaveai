@@ -13,4 +13,5 @@ export interface GenerationInput {
   alertId: string;
   /** @minLength 1 */
   optionId: string;
+  useAI?: boolean;
 }

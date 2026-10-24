@@ -1,8 +1,8 @@
 import { PenLine, RefreshCw } from 'lucide-react';
 import type { CampaignOption } from '@workspace/api-client-react';
 
-export function OptionCard({ option, index, onPrepare, preparing, disabled }: {
-  option: CampaignOption; index: number; onPrepare?: () => void; preparing?: boolean; disabled?: boolean;
+export function OptionCard({ option, index, onPrepare, preparing, disabled, preparingLabel }: {
+  option: CampaignOption; index: number; onPrepare?: () => void; preparing?: boolean; disabled?: boolean; preparingLabel?: string;
 }) {
   return (
     <article className="option-card" data-testid={`option-card-${index}`}>
@@ -21,9 +21,9 @@ export function OptionCard({ option, index, onPrepare, preparing, disabled }: {
       </div>
       <button className="action-btn primary option-go" onClick={onPrepare} disabled={!onPrepare || preparing || disabled} data-testid={`button-prepare-${index}`}>
         {preparing ? <RefreshCw size={13} className="animate-spin" /> : <PenLine size={13} />}
-        {preparing ? 'Preparing…' : 'Prepare campaign'}
+        {preparing ? (preparingLabel || 'Preparing…') : 'Prepare campaign'}
       </button>
-      <small className="option-note">Creates a template draft for review and approval.</small>
+      <small className="option-note">Creates a draft for your review and approval.</small>
     </article>
   );
 }

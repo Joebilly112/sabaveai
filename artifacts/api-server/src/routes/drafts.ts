@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { GenerateDraftBody, UpdateDraftBody, DecideDraftBody } from "@workspace/api-zod";
+import { GenerateDraftBody, UpdateDraftBody, DecideDraftBody, RegenerateDraftBody } from "@workspace/api-zod";
 import { findBusiness, getStore } from "../lib/store";
 import { getUserById } from "../lib/users";
 import { campaignOptions } from "../lib/campaignRules";
-import { templateCopy } from "../lib/copyGenerator";
+import { templateCopy, generateCopy } from "../lib/copyGenerator";
+import { getActiveModel, isAIConfigured } from "../lib/llm";
 import { CampaignError, record, updateDraft, decideDraft } from "../lib/approvalService";
 import { listLogs } from "../lib/activityLog";
 import type { CampaignDraft } from "../lib/types";
 
 const router: IRouter = Router();
+router.get("/ai/status", (_req, res) => res.json({ configured: isAIConfigured(), model: getActiveModel() }));
 router.use(["/generate", "/drafts", "/approve", "/log"], (req, res, next) => {
   if (!getUserById(req.header("x-user-id") ?? "u1")) {
     res.status(401).json({ error: "Unknown simulated user." });
@@ -32,7 +34,7 @@ router.get("/log", (req, res) => {
   }
   res.json(listLogs(req.query.businessId as string | undefined));
 });
-router.post("/generate", (req, res) => {
+router.post("/generate", async (req, res) => {
   const parsed = GenerateDraftBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Business, alert and option IDs are required." }); return; }
   const { businessId, alertId, optionId } = parsed.data;
@@ -46,16 +48,39 @@ router.post("/generate", (req, res) => {
   const option = campaignOptions(business, alert, forecast).find(item => item.id === optionId);
   if (!option) { res.status(404).json({ error: "Option does not belong to this alert." }); return; }
   const user = getUserById(req.header("x-user-id") ?? "u1")!;
+  const copy = parsed.data.useAI !== false
+    ? await generateCopy(business, alert, option, user) : templateCopy(business, option);
   const draft: CampaignDraft = {
     id: randomUUID(), businessId, alertId, option: structuredClone(option),
-    copy: templateCopy(business, option), budgetRM: option.suggestedBudgetRM,
+    copy, budgetRM: option.suggestedBudgetRM,
     channels: business.brandKit.channels.filter(channel => channel === "facebook" || channel === "instagram"),
     status: "draft", createdBy: user.id, history: [],
   };
   getStore().drafts.push(draft);
   record(draft, user, "OPTION_SELECTED", { optionId });
-  record(draft, user, "DRAFT_GENERATED", { source: "template" });
+  record(draft, user, "DRAFT_GENERATED", { source: copy.source, model: copy.model });
   res.json(draft);
+});
+router.post("/drafts/regenerate", async (req, res, next) => {
+  const parsed = RegenerateDraftBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Draft ID is required." }); return; }
+  try {
+    const draft = getStore().drafts.find(item => item.id === parsed.data.draftId);
+    if (!draft) throw new CampaignError(404, "Draft not found.");
+    if (!["draft", "rejected"].includes(draft.status)) throw new CampaignError(409, "Only editable drafts can be regenerated.");
+    const business = findBusiness(draft.businessId)!;
+    const alert = getStore().alerts.find(item => item.id === draft.alertId)!;
+    const user = getUserById(req.header("x-user-id") ?? "u1")!;
+    // Optimistic check: never overwrite another edit/submission during the slow AI call.
+    const revision = JSON.stringify(draft);
+    const copy = await generateCopy(business, alert, structuredClone(draft.option), user);
+    if (JSON.stringify(draft) !== revision) throw new CampaignError(409, "Draft changed during generation. Reopen it and try again.");
+    draft.copy = copy;
+    draft.status = "draft";
+    delete draft.rejectReason;
+    record(draft, user, "DRAFT_GENERATED", { regenerated: true, source: copy.source, model: copy.model });
+    res.json(draft);
+  } catch (error) { next(error); }
 });
 router.patch("/drafts", (req, res, next) => {
   const parsed = UpdateDraftBody.safeParse(req.body);

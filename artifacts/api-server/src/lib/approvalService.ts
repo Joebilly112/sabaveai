@@ -57,7 +57,8 @@ export function updateDraft(input: {
   }
   // Validate a detached candidate first; failed requests never partially overwrite a draft.
   const candidate = structuredClone(draft);
-  if (input.copy) candidate.copy = { ...input.copy, source: "template" };
+  if (input.copy) candidate.copy = { ...input.copy, source: draft.copy.source,
+    model: draft.copy.model, fallbackReason: draft.copy.fallbackReason };
   if (input.offer !== undefined) candidate.option.offer = input.offer;
   if (input.budgetRM !== undefined) candidate.budgetRM = input.budgetRM;
   if (input.channels) candidate.channels = [...new Set(input.channels)];

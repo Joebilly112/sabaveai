@@ -15,6 +15,34 @@ tags:
   - name: forecast
     description: Weather signal forecasts
 paths:
+  /ai/status:
+    get:
+      operationId: getAIStatus
+      responses:
+        "200":
+          description: Server AI configuration (no credentials)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [configured]
+                properties:
+                  configured: { type: boolean }
+                  model: { type: string }
+  /drafts/regenerate:
+    post:
+      operationId: regenerateDraft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegenerationInput" }
+      responses:
+        "200":
+          description: Draft with replacement copy only
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CampaignDraft" }
   /generate:
     post:
       operationId: generateDraft
@@ -164,6 +192,11 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    RegenerationInput:
+      type: object
+      required: [draftId]
+      properties:
+        draftId: { type: string, minLength: 1 }
     GenerationInput:
       type: object
       required: [businessId, alertId, optionId]
@@ -171,6 +204,7 @@ components:
         businessId: { type: string, minLength: 1 }
         alertId: { type: string, minLength: 1 }
         optionId: { type: string, minLength: 1 }
+        useAI: { type: boolean }
     CampaignCopy:
       type: object
       required: [headline, caption_bm, caption_en, hashtags, cta, rationale, source]
@@ -184,7 +218,9 @@ components:
           items: { type: string, maxLength: 100 }
         cta: { type: string, maxLength: 500 }
         rationale: { type: string, maxLength: 5000 }
-        source: { type: string, enum: [template] }
+        source: { type: string, enum: [ai, template] }
+        model: { type: string }
+        fallbackReason: { type: string }
     DraftUpdate:
       type: object
       required: [draftId]

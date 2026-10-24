@@ -5,6 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface RegenerationInput {
+  /** @minLength 1 */
+  draftId: string;
+}
+
 export interface GenerationInput {
   /** @minLength 1 */
   businessId: string;
@@ -12,12 +17,14 @@ export interface GenerationInput {
   alertId: string;
   /** @minLength 1 */
   optionId: string;
+  useAI?: boolean;
 }
 
 export type CampaignCopySource = typeof CampaignCopySource[keyof typeof CampaignCopySource];
 
 
 export const CampaignCopySource = {
+  ai: 'ai',
   template: 'template',
 } as const;
 
@@ -38,6 +45,8 @@ export interface CampaignCopy {
   /** @maxLength 5000 */
   rationale: string;
   source: CampaignCopySource;
+  model?: string;
+  fallbackReason?: string;
 }
 
 export type DraftUpdateChannelsItem = typeof DraftUpdateChannelsItem[keyof typeof DraftUpdateChannelsItem];
@@ -338,6 +347,11 @@ export interface Business {
   socialPages: SocialPages;
   brandKit: BrandKit;
 }
+
+export type GetAIStatus200 = {
+  configured: boolean;
+  model?: string;
+};
 
 export type ListDraftsParams = {
 businessId: string;

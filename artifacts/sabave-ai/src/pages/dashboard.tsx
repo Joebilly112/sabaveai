@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ArrowUpRight, CloudFog, Leaf, RefreshCw, ShieldCheck, SunDim } from 'lucide-react';
-import { getListActivityLogQueryKey, getListBusinessesQueryKey, getListDraftsQueryKey, useGenerateDraft, useListBusinesses, useTriggerSignal } from '@workspace/api-client-react';
+import { ArrowUpRight, CloudFog, Leaf, RefreshCw, ShieldCheck, Sparkles, SunDim } from 'lucide-react';
+import { getListActivityLogQueryKey, getListBusinessesQueryKey, getListDraftsQueryKey, useGenerateDraft, useGetAIStatus, useListBusinesses, useTriggerSignal } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Business, SignalDay, SignalForecast, TriggerResult } from '@workspace/api-client-react';
 import { AlertCard } from '@/components/AlertCard';
@@ -89,12 +89,16 @@ export default function Dashboard() {
   const businessId = selectedBusiness?.id || '';
   const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': userId } } });
   const generate = useGenerateDraft({ request: { headers: { 'x-user-id': userId } } });
+  const aiStatus = useGetAIStatus();
+  const aiConfigured = !!aiStatus.data?.configured;
+  const [useAI, setUseAI] = useState<boolean | null>(null);
+  const aiOn = aiConfigured && (useAI ?? true);
 
   const prepare = async (alertId: string, optionId: string) => {
     if (!businessId || !confirmLeave()) return;
     setPreparing(optionId); setPrepareError('');
     try {
-      const draft = await generate.mutateAsync({ data: { businessId, alertId, optionId } });
+      const draft = await generate.mutateAsync({ data: { businessId, alertId, optionId, useAI: aiOn } });
       queryClient.setQueryData(getListDraftsQueryKey({ businessId }), (old: unknown) => (Array.isArray(old) ? [draft, ...old] : [draft]));
       void queryClient.invalidateQueries({ queryKey: getListDraftsQueryKey({ businessId }) });
       void queryClient.invalidateQueries({ queryKey: getListActivityLogQueryKey() });
@@ -276,9 +280,19 @@ export default function Dashboard() {
                   </div>
                   <p>Each option explains why it fits this warning. Budgets are suggestions in RM.</p>
                 </div>
+                <div className="ai-toggle-row" data-testid="ai-toggle-row">
+                  <label className={`ai-toggle ${aiConfigured ? '' : 'off'}`}>
+                    <input type="checkbox" role="switch" aria-checked={aiOn} checked={aiOn} disabled={!aiConfigured || !!preparing} onChange={(e) => setUseAI(e.target.checked)} aria-describedby="ai-toggle-help" data-testid="toggle-use-ai" />
+                    <span className="ai-switch" aria-hidden="true"><i /></span>
+                    <span><Sparkles size={13} /> Write copy with AI</span>
+                  </label>
+                  <span id="ai-toggle-help" className="ai-help" data-testid="text-ai-status">
+                    {aiStatus.isLoading ? 'Checking AI availability…' : aiConfigured ? `DeepSeek${aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''} · falls back to templates if it fails` : 'AI copy is unavailable: no DeepSeek API key is configured. Template copy will be used.'}
+                  </span>
+                </div>
                 {result.options.length > 0 ? (
                   <div className="options-grid">
-                    {result.options.map((option, index) => <OptionCard option={option} index={index} key={option.id} preparing={preparing === option.id} disabled={!!preparing} onPrepare={() => result.alert && prepare(result.alert.id, option.id)} />)}
+                    {result.options.map((option, index) => <OptionCard option={option} index={index} key={option.id} preparing={preparing === option.id} preparingLabel={aiOn ? 'Writing with AI…' : 'Preparing…'} disabled={!!preparing} onPrepare={() => result.alert && prepare(result.alert.id, option.id)} />)}
                   </div>
                 ) : (
                   <div className="info-card empty-state" data-testid="options-empty"><strong>No options for this warning</strong>Check the forecast again later.</div>

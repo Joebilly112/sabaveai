@@ -103,6 +103,7 @@ export interface CampaignCopy {
   rationale: string;
   source: "ai" | "template";
   model?: string;
+  fallbackReason?: string;
 }
 
 export type DraftStatus =

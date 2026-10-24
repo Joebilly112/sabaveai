@@ -24,4 +24,6 @@ export interface CampaignCopy {
   /** @maxLength 5000 */
   rationale: string;
   source: CampaignCopySource;
+  model?: string;
+  fallbackReason?: string;
 }

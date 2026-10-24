@@ -10,5 +10,6 @@ export type CampaignCopySource = typeof CampaignCopySource[keyof typeof Campaign
 
 
 export const CampaignCopySource = {
+  ai: 'ai',
   template: 'template',
 } as const;

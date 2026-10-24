@@ -8,6 +8,81 @@
 import * as zod from 'zod';
 
 
+export const GetAIStatusResponse = zod.object({
+  "configured": zod.boolean(),
+  "model": zod.string().optional()
+})
+
+
+
+
+
+export const RegenerateDraftBody = zod.object({
+  "draftId": zod.string().min(1)
+})
+
+export const regenerateDraftResponseCopyHeadlineMax = 300;
+
+export const regenerateDraftResponseCopyCaptionBmMax = 5000;
+
+export const regenerateDraftResponseCopyCaptionEnMax = 5000;
+
+export const regenerateDraftResponseCopyHashtagsItemMax = 100;
+
+export const regenerateDraftResponseCopyHashtagsMax = 30;
+
+export const regenerateDraftResponseCopyCtaMax = 500;
+
+export const regenerateDraftResponseCopyRationaleMax = 5000;
+
+
+
+export const RegenerateDraftResponse = zod.object({
+  "id": zod.string(),
+  "businessId": zod.string(),
+  "alertId": zod.string(),
+  "option": zod.object({
+  "id": zod.string(),
+  "signalId": zod.enum(['haze']),
+  "kind": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "offer": zod.string(),
+  "suggestedBudgetRM": zod.number()
+}),
+  "copy": zod.object({
+  "headline": zod.string().max(regenerateDraftResponseCopyHeadlineMax),
+  "caption_bm": zod.string().max(regenerateDraftResponseCopyCaptionBmMax),
+  "caption_en": zod.string().max(regenerateDraftResponseCopyCaptionEnMax),
+  "hashtags": zod.array(zod.string().max(regenerateDraftResponseCopyHashtagsItemMax)).max(regenerateDraftResponseCopyHashtagsMax),
+  "cta": zod.string().max(regenerateDraftResponseCopyCtaMax),
+  "rationale": zod.string().max(regenerateDraftResponseCopyRationaleMax),
+  "source": zod.enum(['ai', 'template']),
+  "model": zod.string().optional(),
+  "fallbackReason": zod.string().optional()
+}),
+  "budgetRM": zod.number(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "status": zod.enum(['draft', 'pending_approval', 'published', 'rejected']),
+  "createdBy": zod.string(),
+  "approvedBy": zod.string().optional(),
+  "rejectReason": zod.string().optional(),
+  "publishResult": zod.object({
+  "platforms": zod.array(zod.string()),
+  "postIds": zod.record(zod.string(), zod.string()),
+  "adId": zod.string().optional(),
+  "status": zod.enum(['published (simulated)']),
+  "publishedAt": zod.string()
+}).optional(),
+  "history": zod.array(zod.object({
+  "at": zod.string(),
+  "by": zod.string(),
+  "action": zod.string()
+}))
+})
+
+
 
 
 
@@ -16,7 +91,8 @@ import * as zod from 'zod';
 export const GenerateDraftBody = zod.object({
   "businessId": zod.string().min(1),
   "alertId": zod.string().min(1),
-  "optionId": zod.string().min(1)
+  "optionId": zod.string().min(1),
+  "useAI": zod.boolean().optional()
 })
 
 export const generateDraftResponseCopyHeadlineMax = 300;
@@ -56,7 +132,9 @@ export const GenerateDraftResponse = zod.object({
   "hashtags": zod.array(zod.string().max(generateDraftResponseCopyHashtagsItemMax)).max(generateDraftResponseCopyHashtagsMax),
   "cta": zod.string().max(generateDraftResponseCopyCtaMax),
   "rationale": zod.string().max(generateDraftResponseCopyRationaleMax),
-  "source": zod.enum(['template'])
+  "source": zod.enum(['ai', 'template']),
+  "model": zod.string().optional(),
+  "fallbackReason": zod.string().optional()
 }),
   "budgetRM": zod.number(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
@@ -120,7 +198,9 @@ export const ListDraftsResponseItem = zod.object({
   "hashtags": zod.array(zod.string().max(listDraftsResponseCopyHashtagsItemMax)).max(listDraftsResponseCopyHashtagsMax),
   "cta": zod.string().max(listDraftsResponseCopyCtaMax),
   "rationale": zod.string().max(listDraftsResponseCopyRationaleMax),
-  "source": zod.enum(['template'])
+  "source": zod.enum(['ai', 'template']),
+  "model": zod.string().optional(),
+  "fallbackReason": zod.string().optional()
 }),
   "budgetRM": zod.number(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
@@ -172,7 +252,9 @@ export const UpdateDraftBody = zod.object({
   "hashtags": zod.array(zod.string().max(updateDraftBodyCopyHashtagsItemMax)).max(updateDraftBodyCopyHashtagsMax),
   "cta": zod.string().max(updateDraftBodyCopyCtaMax),
   "rationale": zod.string().max(updateDraftBodyCopyRationaleMax),
-  "source": zod.enum(['template'])
+  "source": zod.enum(['ai', 'template']),
+  "model": zod.string().optional(),
+  "fallbackReason": zod.string().optional()
 }).optional(),
   "offer": zod.string().max(updateDraftBodyOfferMax).optional(),
   "budgetRM": zod.number().optional(),
@@ -217,7 +299,9 @@ export const UpdateDraftResponse = zod.object({
   "hashtags": zod.array(zod.string().max(updateDraftResponseCopyHashtagsItemMax)).max(updateDraftResponseCopyHashtagsMax),
   "cta": zod.string().max(updateDraftResponseCopyCtaMax),
   "rationale": zod.string().max(updateDraftResponseCopyRationaleMax),
-  "source": zod.enum(['template'])
+  "source": zod.enum(['ai', 'template']),
+  "model": zod.string().optional(),
+  "fallbackReason": zod.string().optional()
 }),
   "budgetRM": zod.number(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
@@ -289,7 +373,9 @@ export const DecideDraftResponse = zod.object({
   "hashtags": zod.array(zod.string().max(decideDraftResponseCopyHashtagsItemMax)).max(decideDraftResponseCopyHashtagsMax),
   "cta": zod.string().max(decideDraftResponseCopyCtaMax),
   "rationale": zod.string().max(decideDraftResponseCopyRationaleMax),
-  "source": zod.enum(['template'])
+  "source": zod.enum(['ai', 'template']),
+  "model": zod.string().optional(),
+  "fallbackReason": zod.string().optional()
 }),
   "budgetRM": zod.number(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
