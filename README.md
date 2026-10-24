@@ -9,18 +9,18 @@ A weather-triggered marketing automation module for Orbyte that turns haze and s
 | Team Name | Nabil The Goat |
 | Team Domain | Domain 2 |
 | SDG Track (1–17) | SDG 8: Decent Work and Economic Growth |
-| Team Leader | [Your full name] |
-| University | [Your university] |
+| Team Leader | Nabil Hilmi Tsaqifi |
+| University | Monash University Malaysia |
 | Number of Members | 1 |
 
 ## Links
 
 | Resource | Link |
 |---|---|
-| GitHub Repository | [https://github.com/your-username/sabave-ai] |
-| Live Demo | [https://your-project.replit.app] |
+| GitHub Repository | https://github.com/Joebilly112/sabaveai/ |
+| Live Demo | https://sabaveai-weather-marketing.replit.app |
 | RunPod Endpoint | Not used (no GPU workload) |
-| Slide Deck | [link to slide deck] |
+| Slide Deck | https://docs.google.com/presentation/d/1hqXOWd7N1-U9MBRl3c70iPwmOtfqQ0awOMJJik0z9oA/edit?usp=sharing |
 | Demo Video | [YouTube link] |
 
 ## Overview
@@ -113,8 +113,8 @@ User (Staff / Owner) ──► React web app (Replit)
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/sabave-ai.git
-cd sabave-ai
+git clone https://github.com/Joebilly112/sabaveai.git
+cd sabaveai
 
 # 2. Install dependencies (this workspace uses pnpm)
 pnpm install
