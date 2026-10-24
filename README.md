@@ -21,7 +21,7 @@ A weather-triggered marketing automation module for Orbyte that turns haze and s
 | Live Demo | https://sabaveai-weather-marketing.replit.app |
 | RunPod Endpoint | Not used (no GPU workload) |
 | Slide Deck | https://docs.google.com/presentation/d/1hqXOWd7N1-U9MBRl3c70iPwmOtfqQ0awOMJJik0z9oA/edit?usp=sharing |
-| Demo Video | [YouTube link] |
+| Demo Video | https://youtu.be/Fa1BEJwJaj8 |
 
 ## Overview
 
