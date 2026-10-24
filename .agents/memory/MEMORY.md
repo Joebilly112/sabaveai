@@ -1,2 +1,3 @@
 - [Sabave staged delivery](sabave-stages.md) — finish one requested stage, summarize its test path, then wait for “continue.”
 - [API schema generation](api-schema-generation.md) — named request schemas avoid duplicate Orval exports from inline bodies.
+- [Seed-data packaging](seed-data-packaging.md) — bundle JSON seeds; production working directories differ from development.
