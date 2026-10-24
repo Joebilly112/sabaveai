@@ -1,0 +1,1 @@
+- [Sabave staged delivery](sabave-stages.md) — finish one requested stage, summarize its test path, then wait for “continue.”

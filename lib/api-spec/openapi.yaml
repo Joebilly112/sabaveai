@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: businesses
+    description: Synthetic business seed data
+  - name: forecast
+    description: Weather signal forecasts
 paths:
   /healthz:
     get:
@@ -24,6 +28,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /businesses:
+    get:
+      operationId: listBusinesses
+      tags: [businesses]
+      summary: List demo businesses
+      responses:
+        "200":
+          description: Businesses available in the demo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Business"
+  /forecast:
+    get:
+      operationId: getForecast
+      tags: [forecast]
+      summary: Get a five-day haze forecast for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: signalId
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [haze]
+        - name: mode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [live, simulated]
+      responses:
+        "200":
+          description: Five-day haze forecast
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignalForecast"
+        "404":
+          description: Business or signal not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +87,156 @@ components:
           type: string
       required:
         - status
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Business:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+          enum: [cafe, laundromat, retail, other]
+        city:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        socialPages:
+          $ref: "#/components/schemas/SocialPages"
+        brandKit:
+          $ref: "#/components/schemas/BrandKit"
+      required: [id, name, type, city, lat, lon, socialPages, brandKit]
+    SocialPages:
+      type: object
+      properties:
+        facebookPageId:
+          type: string
+        instagramHandle:
+          type: string
+      required: [facebookPageId, instagramHandle]
+    BrandKit:
+      type: object
+      properties:
+        logoPath:
+          type: string
+        brandColours:
+          type: array
+          items:
+            type: string
+        posterPath:
+          type: string
+        posterColours:
+          type: array
+          items:
+            type: string
+        posterDescription:
+          type: string
+        posterStyleSummary:
+          type: string
+        websiteUrl:
+          type: string
+        websiteVoiceSummary:
+          type: string
+        ethos:
+          type: string
+        toneChips:
+          type: array
+          items:
+            type: string
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        targetCustomers:
+          type: string
+        delivery:
+          type: boolean
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [facebook, instagram, whatsapp, tiktok]
+        language:
+          type: string
+          enum: [bm, en, both]
+        neverSay:
+          type: array
+          items:
+            type: string
+        monthlyAdBudgetCapRM:
+          type: number
+        approverUserId:
+          type: string
+        baselineWeeklySalesRM:
+          type: number
+        lastBadWeatherDipPct:
+          type: number
+      required:
+        - brandColours
+        - ethos
+        - toneChips
+        - products
+        - targetCustomers
+        - delivery
+        - channels
+        - language
+        - neverSay
+        - monthlyAdBudgetCapRM
+        - approverUserId
+        - baselineWeeklySalesRM
+        - lastBadWeatherDipPct
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+        priceRM:
+          type: number
+      required: [name, priceRM]
+    SignalForecast:
+      type: object
+      properties:
+        signalId:
+          type: string
+          enum: [haze]
+        businessId:
+          type: string
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/SignalDay"
+        source:
+          type: string
+          enum: [open-meteo, simulated, offline]
+        fetchedAt:
+          type: string
+          format: date-time
+      required: [signalId, businessId, days, source, fetchedAt]
+    SignalDay:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        value:
+          type: number
+        unit:
+          type: string
+        level:
+          type: integer
+          minimum: 0
+          maximum: 3
+        levelLabel:
+          type: string
+        detail:
+          type: string
+      required: [date, value, unit, level, levelLabel]
 

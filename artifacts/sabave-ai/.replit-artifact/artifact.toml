@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "sabave.ai"
+description = "A weather-triggered marketing module for Orbyte, helping Malaysian small businesses prepare brand-matched campaigns when haze or heavy rain is forecast."
+version = "1.0.0"
+id = "artifacts/sabave-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22392
+
+[services.development]
+run = "pnpm --filter @workspace/sabave-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sabave-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sabave-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22392"
+BASE_PATH = "/"

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#FDE68A"/>
+  <circle cx="510" cy="80" r="145" fill="#FBBF24"/>
+  <rect x="54" y="70" width="492" height="460" rx="30" fill="#FFF7D6"/>
+  <text x="90" y="142" fill="#92400E" font-family="Georgia,serif" font-size="27" font-weight="bold">KOPITIAM SELERA PAGI</text>
+  <text x="90" y="255" fill="#B45309" font-family="Georgia,serif" font-size="69" font-weight="bold">Pagi jadi</text>
+  <text x="90" y="326" fill="#B45309" font-family="Georgia,serif" font-size="69" font-weight="bold">lebih sedap.</text>
+  <rect x="90" y="375" width="208" height="54" rx="27" fill="#B45309"/>
+  <text x="115" y="410" fill="#FFF7D6" font-family="Arial,sans-serif" font-size="21">Nasi Lemak RM8</text>
+</svg>

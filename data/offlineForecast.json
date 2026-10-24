@@ -1,0 +1,10 @@
+{
+  "haze": [22, 27, 31, 25, 29],
+  "rain": [
+    { "precipitation": 3, "probability": 20, "weatherCode": 2 },
+    { "precipitation": 8, "probability": 35, "weatherCode": 3 },
+    { "precipitation": 5, "probability": 25, "weatherCode": 2 },
+    { "precipitation": 6, "probability": 30, "weatherCode": 3 },
+    { "precipitation": 2, "probability": 15, "weatherCode": 1 }
+  ]
+}

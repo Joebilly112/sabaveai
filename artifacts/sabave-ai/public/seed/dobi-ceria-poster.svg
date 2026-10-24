@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#BAE6FD"/>
+  <circle cx="510" cy="92" r="140" fill="#7DD3FC"/>
+  <rect x="52" y="66" width="496" height="468" rx="34" fill="#F0F9FF"/>
+  <text x="88" y="137" fill="#075985" font-family="Arial,sans-serif" font-size="26" font-weight="bold">DOBI CERIA EXPRESS</text>
+  <text x="88" y="251" fill="#0369A1" font-family="Arial,sans-serif" font-size="65" font-weight="bold">Baju bersih,</text>
+  <text x="88" y="323" fill="#0369A1" font-family="Arial,sans-serif" font-size="65" font-weight="bold">hari ceria!</text>
+  <rect x="88" y="378" width="226" height="56" rx="28" fill="#0369A1"/>
+  <text x="116" y="414" fill="#F0F9FF" font-family="Arial,sans-serif" font-size="21">Wash &amp; Fold RM15</text>
+</svg>

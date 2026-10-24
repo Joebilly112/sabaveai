@@ -1,0 +1,117 @@
+[
+  {
+    "id": "b1",
+    "name": "Kopitiam Selera Pagi",
+    "type": "cafe",
+    "city": "Shah Alam",
+    "lat": 3.0733,
+    "lon": 101.5185,
+    "socialPages": {
+      "facebookPageId": "demo_fb_selera_pagi",
+      "instagramHandle": "@selerapagi.demo"
+    },
+    "brandKit": {
+      "logoPath": "/seed/selera-pagi-logo.svg",
+      "brandColours": ["#B45309", "#FDE68A"],
+      "posterPath": "/seed/selera-pagi-poster.svg",
+      "posterColours": ["#B45309", "#FDE68A"],
+      "posterDescription": "A warm breakfast poster with bold type and a simple kopi cup illustration.",
+      "posterStyleSummary": "Traditional kopitiam warmth, friendly rounded lettering, and clear product-led layouts.",
+      "websiteUrl": "https://example.com/selerapagi",
+      "websiteVoiceSummary": "Friendly, familiar Malaysian breakfast language that emphasizes value and family.",
+      "ethos": "Old-school kopitiam warmth, affordable breakfast for working families.",
+      "toneChips": ["traditional", "family", "halal-friendly"],
+      "products": [
+        { "name": "Kopi O", "priceRM": 2.5 },
+        { "name": "Nasi Lemak Ayam", "priceRM": 8 },
+        { "name": "Roti Bakar Kaya", "priceRM": 4 }
+      ],
+      "targetCustomers": "Office workers and families nearby.",
+      "delivery": true,
+      "channels": ["facebook", "instagram", "whatsapp"],
+      "language": "both",
+      "neverSay": ["pork", "alcohol", "cheapest in town"],
+      "monthlyAdBudgetCapRM": 600,
+      "approverUserId": "u2",
+      "baselineWeeklySalesRM": 9000,
+      "lastBadWeatherDipPct": 22
+    }
+  },
+  {
+    "id": "b2",
+    "name": "Dobi Ceria Express",
+    "type": "laundromat",
+    "city": "Petaling Jaya",
+    "lat": 3.1073,
+    "lon": 101.6067,
+    "socialPages": {
+      "facebookPageId": "demo_fb_dobi_ceria",
+      "instagramHandle": "@dobiceria.demo"
+    },
+    "brandKit": {
+      "logoPath": "/seed/dobi-ceria-logo.svg",
+      "brandColours": ["#0369A1", "#BAE6FD"],
+      "posterPath": "/seed/dobi-ceria-poster.svg",
+      "posterColours": ["#0369A1", "#BAE6FD"],
+      "posterDescription": "A bright laundry service poster with clean blocks and playful bubbles.",
+      "posterStyleSummary": "Modern, cheerful, and practical with rounded typography and quick-to-read offers.",
+      "websiteUrl": "https://example.com/dobiceria",
+      "websiteVoiceSummary": "Upbeat and helpful language for busy students and working adults.",
+      "ethos": "Fast, clean and friendly self-service laundry for busy people.",
+      "toneChips": ["modern", "playful"],
+      "products": [
+        { "name": "Wash", "priceRM": 5 },
+        { "name": "Dry", "priceRM": 5 },
+        { "name": "Wash & Fold (5kg)", "priceRM": 15 },
+        { "name": "Duvet Clean", "priceRM": 25 }
+      ],
+      "targetCustomers": "Students and young working adults.",
+      "delivery": false,
+      "channels": ["facebook", "instagram", "tiktok"],
+      "language": "both",
+      "neverSay": ["kills all germs", "100% hygienic"],
+      "monthlyAdBudgetCapRM": 300,
+      "approverUserId": "u2",
+      "baselineWeeklySalesRM": 4500,
+      "lastBadWeatherDipPct": 15
+    }
+  },
+  {
+    "id": "b3",
+    "name": "Butik Anggun",
+    "type": "retail",
+    "city": "Johor Bahru",
+    "lat": 1.4927,
+    "lon": 103.7414,
+    "socialPages": {
+      "facebookPageId": "demo_fb_butik_anggun",
+      "instagramHandle": "@butikanggun.demo"
+    },
+    "brandKit": {
+      "logoPath": "/seed/butik-anggun-logo.svg",
+      "brandColours": ["#BE185D", "#FCE7F3"],
+      "posterPath": "/seed/butik-anggun-poster.svg",
+      "posterColours": ["#BE185D", "#FCE7F3"],
+      "posterDescription": "An elegant modest-fashion poster with generous spacing and soft pink accents.",
+      "posterStyleSummary": "Elegant, feminine layouts with refined typography and focused product photography.",
+      "websiteUrl": "https://example.com/butikanggun",
+      "websiteVoiceSummary": "Confident Bahasa Malaysia copy centered on modest style and honest pricing.",
+      "ethos": "Elegant modest fashion at honest prices.",
+      "toneChips": ["premium", "traditional"],
+      "products": [
+        { "name": "Baju Kurung", "priceRM": 129 },
+        { "name": "Tudung Bawal", "priceRM": 35 },
+        { "name": "Batik Shirt", "priceRM": 89 }
+      ],
+      "targetCustomers": "Women aged 25-50 shopping for work and festive occasions.",
+      "delivery": true,
+      "channels": ["facebook", "instagram", "whatsapp"],
+      "language": "bm",
+      "neverSay": ["cheap", "murah gila", "Butik Seri"],
+      "monthlyAdBudgetCapRM": 800,
+      "approverUserId": "u2",
+      "baselineWeeklySalesRM": 12000,
+      "lastBadWeatherDipPct": 28
+    }
+  }
+]

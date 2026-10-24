@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#FCE7F3"/>
+  <circle cx="520" cy="74" r="150" fill="#F9A8D4"/>
+  <rect x="54" y="64" width="492" height="472" rx="28" fill="#FFF7FB"/>
+  <text x="90" y="136" fill="#9D174D" font-family="Georgia,serif" font-size="27" letter-spacing="3">BUTIK ANGGUN</text>
+  <text x="90" y="254" fill="#BE185D" font-family="Georgia,serif" font-size="66">Gaya sopan,</text>
+  <text x="90" y="328" fill="#BE185D" font-family="Georgia,serif" font-size="66">keyakinan indah.</text>
+  <path d="M90 370h200" stroke="#BE185D" stroke-width="2"/>
+  <text x="90" y="417" fill="#831843" font-family="Arial,sans-serif" font-size="22">Koleksi Baju Kurung RM129</text>
+</svg>
