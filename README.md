@@ -175,8 +175,8 @@ Not used. sabave.ai has no GPU workload: AI inference is done through the hosted
 - [x] Demo video link added
 - [x] Replit used, with proof of use in `submission/`
 - [x] RunPod not used (no GPU workload), declared in the Technical & Tools Declaration
-- [x] Preliminary submission completed (`SDC2026_NabilTheGoat_Preliminary.pdf`)
-- [x] Technology declaration completed (`SDC2026_NabilTheGoat_TechDeclaration.pdf`)
+- [x] Preliminary submission completed (`submission/SDC2026_NabilTheGoat_Preliminary.pdf`)
+- [x] Technology declaration completed (`submission/SDC2026_NabilTheGoat_TechDeclaration.pdf`)
 - [x] Submission files renamed with your team name
 - [x] "How to Run" steps verified
 - [x] No API keys or secrets committed to the repository
