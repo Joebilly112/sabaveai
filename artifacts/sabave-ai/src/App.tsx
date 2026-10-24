@@ -5,6 +5,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Dashboard from '@/pages/dashboard';
 import NotFound from '@/pages/not-found';
+import ActivityLog from '@/pages/log';
+import { WorkspaceProvider } from '@/lib/workspace';
 import {
   Route,
   Switch,
@@ -25,6 +27,7 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/log" component={ActivityLog} />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
@@ -39,12 +42,14 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <WorkspaceProvider>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <Router />
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
+      </WorkspaceProvider>
     </QueryClientProvider>
   );
 }

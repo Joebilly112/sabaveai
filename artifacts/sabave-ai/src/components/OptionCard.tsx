@@ -1,7 +1,9 @@
-import { Lock } from 'lucide-react';
+import { PenLine, RefreshCw } from 'lucide-react';
 import type { CampaignOption } from '@workspace/api-client-react';
 
-export function OptionCard({ option, index }: { option: CampaignOption; index: number }) {
+export function OptionCard({ option, index, onPrepare, preparing, disabled }: {
+  option: CampaignOption; index: number; onPrepare?: () => void; preparing?: boolean; disabled?: boolean;
+}) {
   return (
     <article className="option-card" data-testid={`option-card-${index}`}>
       <div className="option-top">
@@ -17,10 +19,11 @@ export function OptionCard({ option, index }: { option: CampaignOption; index: n
         <span>Why this?</span>
         <p>{option.reason}</p>
       </div>
-      <button className="action-btn option-prepare" disabled aria-describedby={`stage3-${index}`} data-testid={`button-prepare-${index}`}>
-        <Lock size={13} /> Prepare campaign
+      <button className="action-btn primary option-go" onClick={onPrepare} disabled={!onPrepare || preparing || disabled} data-testid={`button-prepare-${index}`}>
+        {preparing ? <RefreshCw size={13} className="animate-spin" /> : <PenLine size={13} />}
+        {preparing ? 'Preparing…' : 'Prepare campaign'}
       </button>
-      <small id={`stage3-${index}`} className="option-note">Drafting and approval arrive in Stage 3.</small>
+      <small className="option-note">Creates a template draft for review and approval.</small>
     </article>
   );
 }

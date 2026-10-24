@@ -5,6 +5,183 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface GenerationInput {
+  /** @minLength 1 */
+  businessId: string;
+  /** @minLength 1 */
+  alertId: string;
+  /** @minLength 1 */
+  optionId: string;
+}
+
+export type CampaignCopySource = typeof CampaignCopySource[keyof typeof CampaignCopySource];
+
+
+export const CampaignCopySource = {
+  template: 'template',
+} as const;
+
+export interface CampaignCopy {
+  /** @maxLength 300 */
+  headline: string;
+  /** @maxLength 5000 */
+  caption_bm: string;
+  /** @maxLength 5000 */
+  caption_en: string;
+  /**
+     * @maxItems 30
+     * @items.maxLength 100
+     */
+  hashtags: string[];
+  /** @maxLength 500 */
+  cta: string;
+  /** @maxLength 5000 */
+  rationale: string;
+  source: CampaignCopySource;
+}
+
+export type DraftUpdateChannelsItem = typeof DraftUpdateChannelsItem[keyof typeof DraftUpdateChannelsItem];
+
+
+export const DraftUpdateChannelsItem = {
+  facebook: 'facebook',
+  instagram: 'instagram',
+  whatsapp: 'whatsapp',
+  tiktok: 'tiktok',
+} as const;
+
+export type DraftUpdateAction = typeof DraftUpdateAction[keyof typeof DraftUpdateAction];
+
+
+export const DraftUpdateAction = {
+  submit: 'submit',
+} as const;
+
+export interface DraftUpdate {
+  /** @minLength 1 */
+  draftId: string;
+  copy?: CampaignCopy;
+  /** @maxLength 2000 */
+  offer?: string;
+  budgetRM?: number;
+  channels?: DraftUpdateChannelsItem[];
+  action?: DraftUpdateAction;
+}
+
+export type ApprovalInputDecision = typeof ApprovalInputDecision[keyof typeof ApprovalInputDecision];
+
+
+export const ApprovalInputDecision = {
+  approve: 'approve',
+  reject: 'reject',
+} as const;
+
+export interface ApprovalInput {
+  /** @minLength 1 */
+  draftId: string;
+  decision: ApprovalInputDecision;
+  budgetRM?: number;
+  /** @maxLength 2000 */
+  reason?: string;
+}
+
+export interface DraftHistory {
+  at: string;
+  by: string;
+  action: string;
+}
+
+export type PublishResultPostIds = {[key: string]: string};
+
+export type PublishResultStatus = typeof PublishResultStatus[keyof typeof PublishResultStatus];
+
+
+export const PublishResultStatus = {
+  'published_(simulated)': 'published (simulated)',
+} as const;
+
+export interface PublishResult {
+  platforms: string[];
+  postIds: PublishResultPostIds;
+  adId?: string;
+  status: PublishResultStatus;
+  publishedAt: string;
+}
+
+export type CampaignDraftChannelsItem = typeof CampaignDraftChannelsItem[keyof typeof CampaignDraftChannelsItem];
+
+
+export const CampaignDraftChannelsItem = {
+  facebook: 'facebook',
+  instagram: 'instagram',
+  whatsapp: 'whatsapp',
+  tiktok: 'tiktok',
+} as const;
+
+export type CampaignDraftStatus = typeof CampaignDraftStatus[keyof typeof CampaignDraftStatus];
+
+
+export const CampaignDraftStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  published: 'published',
+  rejected: 'rejected',
+} as const;
+
+export type CampaignOptionSignalId = typeof CampaignOptionSignalId[keyof typeof CampaignOptionSignalId];
+
+
+export const CampaignOptionSignalId = {
+  haze: 'haze',
+} as const;
+
+export interface CampaignOption {
+  id: string;
+  signalId: CampaignOptionSignalId;
+  kind: string;
+  title: string;
+  description: string;
+  reason: string;
+  offer: string;
+  suggestedBudgetRM: number;
+}
+
+export interface CampaignDraft {
+  id: string;
+  businessId: string;
+  alertId: string;
+  option: CampaignOption;
+  copy: CampaignCopy;
+  budgetRM: number;
+  channels: CampaignDraftChannelsItem[];
+  status: CampaignDraftStatus;
+  createdBy: string;
+  approvedBy?: string;
+  rejectReason?: string;
+  publishResult?: PublishResult;
+  history: DraftHistory[];
+}
+
+export type LogEntryRole = typeof LogEntryRole[keyof typeof LogEntryRole];
+
+
+export const LogEntryRole = {
+  staff: 'staff',
+  owner: 'owner',
+} as const;
+
+export type LogEntryDetails = {[key: string]: unknown};
+
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  actor: string;
+  role: LogEntryRole;
+  businessId: string;
+  action: string;
+  details: LogEntryDetails;
+}
+
 export type TriggerInputSignalId = typeof TriggerInputSignalId[keyof typeof TriggerInputSignalId];
 
 
@@ -73,24 +250,6 @@ export interface WeatherAlert {
   daysAhead: number;
   createdAt: string;
   open: boolean;
-}
-
-export type CampaignOptionSignalId = typeof CampaignOptionSignalId[keyof typeof CampaignOptionSignalId];
-
-
-export const CampaignOptionSignalId = {
-  haze: 'haze',
-} as const;
-
-export interface CampaignOption {
-  id: string;
-  signalId: CampaignOptionSignalId;
-  kind: string;
-  title: string;
-  description: string;
-  reason: string;
-  offer: string;
-  suggestedBudgetRM: number;
 }
 
 export interface TriggerResult {
@@ -179,6 +338,14 @@ export interface Business {
   socialPages: SocialPages;
   brandKit: BrandKit;
 }
+
+export type ListDraftsParams = {
+businessId: string;
+};
+
+export type ListActivityLogParams = {
+businessId?: string;
+};
 
 export type GetForecastParams = {
 businessId: string;

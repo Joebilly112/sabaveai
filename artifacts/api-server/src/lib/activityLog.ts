@@ -19,7 +19,7 @@ export function listLogs(businessId?: string): LogEntry[] {
   const filtered = businessId
     ? logs.filter((entry) => entry.businessId === businessId)
     : logs;
-  return [...filtered].sort((a, b) =>
+  return [...filtered].reverse().sort((a, b) =>
     b.timestamp.localeCompare(a.timestamp),
   );
 }

@@ -21,9 +21,16 @@ import type {
 
 import type {
   ApiError,
+  ApprovalInput,
   Business,
+  CampaignDraft,
+  DraftUpdate,
+  GenerationInput,
   GetForecastParams,
   HealthStatus,
+  ListActivityLogParams,
+  ListDraftsParams,
+  LogEntry,
   SignalForecast,
   TriggerInput,
   TriggerResult
@@ -55,6 +62,408 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGenerateDraftUrl = () => {
+
+
+
+
+  return `/api/generate`
+}
+
+export const generateDraft = async (generationInput: GenerationInput, options?: Parameters<typeof customFetch>[1]): Promise<CampaignDraft> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CampaignDraft>(getGenerateDraftUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(generationInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateDraftMutationKey = () => ['generateDraft'] as const;
+
+export const getGenerateDraftMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDraft>>, TError,GenerateDraftMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateDraft>>, TError,GenerateDraftMutationVariables, TContext> => {
+
+const mutationKey = getGenerateDraftMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateDraft>>, GenerateDraftMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateDraft(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateDraftMutationResult = NonNullable<Awaited<ReturnType<typeof generateDraft>>>
+    export type GenerateDraftMutationBody = BodyType<GenerationInput>
+    export type GenerateDraftMutationError = ErrorType<unknown>
+    export type GenerateDraftMutationVariables = {data: BodyType<GenerationInput>}
+
+    export const useGenerateDraft = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateDraft>>, TError,GenerateDraftMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateDraft>>,
+        TError,
+        GenerateDraftMutationVariables,
+        TContext
+      > => {
+      return useMutation(getGenerateDraftMutationOptions(options));
+    }
+
+export const getListDraftsUrl = (params: ListDraftsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/drafts?${stringifiedParams}` : `/api/drafts`
+}
+
+export const listDrafts = async (params: ListDraftsParams, options?: Parameters<typeof customFetch>[1]): Promise<CampaignDraft[]> => {
+
+  return customFetch<CampaignDraft[]>(getListDraftsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDraftsQueryKey = (params?: ListDraftsParams,) => {
+    return [
+    `/api/drafts`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListDraftsQueryOptions = <TData = Awaited<ReturnType<typeof listDrafts>>, TError = ErrorType<unknown>>(params: ListDraftsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDraftsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDrafts>>> = ({ signal }) => listDrafts(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDrafts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof listDrafts>>>
+export type ListDraftsQueryError = ErrorType<unknown>
+
+
+
+export function useListDrafts<TData = Awaited<ReturnType<typeof listDrafts>>, TError = ErrorType<unknown>>(
+ params: ListDraftsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDraftsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateDraftUrl = () => {
+
+
+
+
+  return `/api/drafts`
+}
+
+export const updateDraft = async (draftUpdate: DraftUpdate, options?: Parameters<typeof customFetch>[1]): Promise<CampaignDraft> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CampaignDraft>(getUpdateDraftUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(draftUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateDraftMutationKey = () => ['updateDraft'] as const;
+
+export const getUpdateDraftMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDraft>>, TError,UpdateDraftMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDraft>>, TError,UpdateDraftMutationVariables, TContext> => {
+
+const mutationKey = getUpdateDraftMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDraft>>, UpdateDraftMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateDraft(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDraftMutationResult = NonNullable<Awaited<ReturnType<typeof updateDraft>>>
+    export type UpdateDraftMutationBody = BodyType<DraftUpdate>
+    export type UpdateDraftMutationError = ErrorType<unknown>
+    export type UpdateDraftMutationVariables = {data: BodyType<DraftUpdate>}
+
+    export const useUpdateDraft = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDraft>>, TError,UpdateDraftMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDraft>>,
+        TError,
+        UpdateDraftMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateDraftMutationOptions(options));
+    }
+
+export const getDecideDraftUrl = () => {
+
+
+
+
+  return `/api/approve`
+}
+
+export const decideDraft = async (approvalInput: ApprovalInput, options?: Parameters<typeof customFetch>[1]): Promise<CampaignDraft> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CampaignDraft>(getDecideDraftUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(approvalInput)
+  }
+);}
+
+
+
+
+
+export const getDecideDraftMutationKey = () => ['decideDraft'] as const;
+
+export const getDecideDraftMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof decideDraft>>, TError,DecideDraftMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof decideDraft>>, TError,DecideDraftMutationVariables, TContext> => {
+
+const mutationKey = getDecideDraftMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof decideDraft>>, DecideDraftMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  decideDraft(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DecideDraftMutationResult = NonNullable<Awaited<ReturnType<typeof decideDraft>>>
+    export type DecideDraftMutationBody = BodyType<ApprovalInput>
+    export type DecideDraftMutationError = ErrorType<unknown>
+    export type DecideDraftMutationVariables = {data: BodyType<ApprovalInput>}
+
+    export const useDecideDraft = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof decideDraft>>, TError,DecideDraftMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof decideDraft>>,
+        TError,
+        DecideDraftMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDecideDraftMutationOptions(options));
+    }
+
+export const getListActivityLogUrl = (params?: ListActivityLogParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/log?${stringifiedParams}` : `/api/log`
+}
+
+export const listActivityLog = async (params?: ListActivityLogParams, options?: Parameters<typeof customFetch>[1]): Promise<LogEntry[]> => {
+
+  return customFetch<LogEntry[]>(getListActivityLogUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListActivityLogQueryKey = (params?: ListActivityLogParams,) => {
+    return [
+    `/api/log`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListActivityLogQueryOptions = <TData = Awaited<ReturnType<typeof listActivityLog>>, TError = ErrorType<unknown>>(params?: ListActivityLogParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listActivityLog>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListActivityLogQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listActivityLog>>> = ({ signal }) => listActivityLog(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listActivityLog>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListActivityLogQueryResult = NonNullable<Awaited<ReturnType<typeof listActivityLog>>>
+export type ListActivityLogQueryError = ErrorType<unknown>
+
+
+
+export function useListActivityLog<TData = Awaited<ReturnType<typeof listActivityLog>>, TError = ErrorType<unknown>>(
+ params?: ListActivityLogParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listActivityLog>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListActivityLogQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getTriggerSignalUrl = () => {
 

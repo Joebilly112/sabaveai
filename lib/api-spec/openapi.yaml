@@ -15,6 +15,73 @@ tags:
   - name: forecast
     description: Weather signal forecasts
 paths:
+  /generate:
+    post:
+      operationId: generateDraft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GenerationInput" }
+      responses:
+        "200":
+          description: Template draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CampaignDraft" }
+  /drafts:
+    get:
+      operationId: listDrafts
+      parameters:
+        - { name: businessId, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Stored drafts for this business
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CampaignDraft" }
+    patch:
+      operationId: updateDraft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DraftUpdate" }
+      responses:
+        "200":
+          description: Updated draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CampaignDraft" }
+  /approve:
+    post:
+      operationId: decideDraft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovalInput" }
+      responses:
+        "200":
+          description: Published or rejected draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CampaignDraft" }
+  /log:
+    get:
+      operationId: listActivityLog
+      parameters:
+        - { name: businessId, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Append-only activity, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LogEntry" }
   /trigger:
     post:
       operationId: triggerSignal
@@ -97,6 +164,101 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    GenerationInput:
+      type: object
+      required: [businessId, alertId, optionId]
+      properties:
+        businessId: { type: string, minLength: 1 }
+        alertId: { type: string, minLength: 1 }
+        optionId: { type: string, minLength: 1 }
+    CampaignCopy:
+      type: object
+      required: [headline, caption_bm, caption_en, hashtags, cta, rationale, source]
+      properties:
+        headline: { type: string, maxLength: 300 }
+        caption_bm: { type: string, maxLength: 5000 }
+        caption_en: { type: string, maxLength: 5000 }
+        hashtags:
+          type: array
+          maxItems: 30
+          items: { type: string, maxLength: 100 }
+        cta: { type: string, maxLength: 500 }
+        rationale: { type: string, maxLength: 5000 }
+        source: { type: string, enum: [template] }
+    DraftUpdate:
+      type: object
+      required: [draftId]
+      properties:
+        draftId: { type: string, minLength: 1 }
+        copy: { $ref: "#/components/schemas/CampaignCopy" }
+        offer: { type: string, maxLength: 2000 }
+        budgetRM: { type: number }
+        channels:
+          type: array
+          items: { type: string, enum: [facebook, instagram, whatsapp, tiktok] }
+        action: { type: string, enum: [submit] }
+    ApprovalInput:
+      type: object
+      required: [draftId, decision]
+      properties:
+        draftId: { type: string, minLength: 1 }
+        decision: { type: string, enum: [approve, reject] }
+        budgetRM: { type: number }
+        reason: { type: string, maxLength: 2000 }
+    DraftHistory:
+      type: object
+      required: [at, by, action]
+      properties:
+        at: { type: string }
+        by: { type: string }
+        action: { type: string }
+    PublishResult:
+      type: object
+      required: [platforms, postIds, status, publishedAt]
+      properties:
+        platforms:
+          type: array
+          items: { type: string }
+        postIds:
+          type: object
+          additionalProperties: { type: string }
+        adId: { type: string }
+        status: { type: string, enum: ["published (simulated)"] }
+        publishedAt: { type: string }
+    CampaignDraft:
+      type: object
+      required: [id, businessId, alertId, option, copy, budgetRM, channels, status, createdBy, history]
+      properties:
+        id: { type: string }
+        businessId: { type: string }
+        alertId: { type: string }
+        option: { $ref: "#/components/schemas/CampaignOption" }
+        copy: { $ref: "#/components/schemas/CampaignCopy" }
+        budgetRM: { type: number }
+        channels:
+          type: array
+          items: { type: string, enum: [facebook, instagram, whatsapp, tiktok] }
+        status: { type: string, enum: [draft, pending_approval, published, rejected] }
+        createdBy: { type: string }
+        approvedBy: { type: string }
+        rejectReason: { type: string }
+        publishResult: { $ref: "#/components/schemas/PublishResult" }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/DraftHistory" }
+    LogEntry:
+      type: object
+      required: [id, timestamp, actor, role, businessId, action, details]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        actor: { type: string }
+        role: { type: string, enum: [staff, owner] }
+        businessId: { type: string }
+        action: { type: string }
+        details:
+          type: object
+          additionalProperties: {}
     TriggerInput:
       type: object
       required: [businessId, signalId]

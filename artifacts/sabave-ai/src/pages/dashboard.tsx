@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ArrowUpRight, CloudFog, Leaf, RefreshCw, ShieldCheck, SunDim } from 'lucide-react';
-import { getListBusinessesQueryKey, useListBusinesses, useTriggerSignal } from '@workspace/api-client-react';
+import { getListActivityLogQueryKey, getListBusinessesQueryKey, getListDraftsQueryKey, useGenerateDraft, useListBusinesses, useTriggerSignal } from '@workspace/api-client-react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Business, SignalDay, SignalForecast, TriggerResult } from '@workspace/api-client-react';
 import { AlertCard } from '@/components/AlertCard';
 import { OptionCard } from '@/components/OptionCard';
+import { AppHeader } from '@/components/AppHeader';
+import { CampaignStudio } from '@/components/CampaignStudio';
+import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
 
 type ForecastAction = 'check' | 'simulate';
 
@@ -70,8 +74,11 @@ function LoadingForecast() {
 export default function Dashboard() {
   const businessesQuery = useListBusinesses({ query: { queryKey: getListBusinessesQueryKey() } });
   const businesses = (businessesQuery.data || []) as Business[];
-  const [selectedId, setSelectedId] = useState('');
-  const [user, setUser] = useState<'staff' | 'owner'>('staff');
+  const { businessId: selectedId, role: user, userId, confirmLeave } = useWorkspace();
+  const queryClient = useQueryClient();
+  const [draftId, setDraftId] = useState('');
+  const [preparing, setPreparing] = useState('');
+  const [prepareError, setPrepareError] = useState('');
   const [requestedAction, setRequestedAction] = useState<ForecastAction | null>(null);
   const [result, setResult] = useState<TriggerResult | null>(null);
   const [triggerError, setTriggerError] = useState(false);
@@ -80,7 +87,22 @@ export default function Dashboard() {
     [businesses, selectedId],
   );
   const businessId = selectedBusiness?.id || '';
-  const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': user === 'owner' ? 'u2' : 'u1' } } });
+  const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': userId } } });
+  const generate = useGenerateDraft({ request: { headers: { 'x-user-id': userId } } });
+
+  const prepare = async (alertId: string, optionId: string) => {
+    if (!businessId || !confirmLeave()) return;
+    setPreparing(optionId); setPrepareError('');
+    try {
+      const draft = await generate.mutateAsync({ data: { businessId, alertId, optionId } });
+      queryClient.setQueryData(getListDraftsQueryKey({ businessId }), (old: unknown) => (Array.isArray(old) ? [draft, ...old] : [draft]));
+      void queryClient.invalidateQueries({ queryKey: getListDraftsQueryKey({ businessId }) });
+      void queryClient.invalidateQueries({ queryKey: getListActivityLogQueryKey() });
+      if (currentBusiness.current !== businessId) return;
+      setDraftId(draft.id);
+      requestAnimationFrame(() => document.getElementById('studio-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    } catch (e) { if (currentBusiness.current === businessId) setPrepareError(apiErrorInfo(e).message); } finally { setPreparing(''); }
+  };
   const mutateRef = useRef(trigger.mutateAsync);
   mutateRef.current = trigger.mutateAsync;
   const requestSeq = useRef(0);
@@ -107,6 +129,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     currentBusiness.current = businessId;
+    setDraftId('');
+    setPrepareError('');
     requestSeq.current += 1;
     setResult(null);
     setTriggerError(false);
@@ -124,48 +148,7 @@ export default function Dashboard() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div className="brand-lockup" data-testid="identity-sabave-orbyte">
-          <div className="brand-mark" aria-hidden="true">s</div>
-          <div>
-            <div className="brand-name">sabave.ai</div>
-            <div className="brand-caption">A weather signal by Orbyte</div>
-          </div>
-        </div>
-        <div className="topbar-right">
-          <nav className="nav-links" aria-label="Main navigation">
-            <button className="nav-item active" aria-current="page" data-testid="nav-dashboard">Dashboard</button>
-            <button className="nav-item unavailable" disabled title="Available in a later stage" data-testid="nav-brand-kit">Brand Kit</button>
-            <button className="nav-item unavailable" disabled title="Available in a later stage" data-testid="nav-activity-log">Activity Log</button>
-          </nav>
-          <div className="identity-controls">
-            <label className="sr-only" htmlFor="business-select">Select business</label>
-            <select
-              id="business-select"
-              className="top-select"
-              value={selectedBusiness?.id || ''}
-              onChange={(event) => setSelectedId(event.target.value)}
-              disabled={isLoadingBusinesses || businesses.length === 0}
-              data-testid="select-business"
-            >
-              {isLoadingBusinesses && <option value="">Loading businesses…</option>}
-              {!isLoadingBusinesses && businesses.length === 0 && <option value="">No businesses available</option>}
-              {businesses.map((business) => <option key={business.id} value={business.id}>{business.name}</option>)}
-            </select>
-            <label className="sr-only" htmlFor="user-select">Simulated user</label>
-            <select
-              id="user-select"
-              className="top-select role-select"
-              value={user}
-              onChange={(event) => setUser(event.target.value as 'staff' | 'owner')}
-              data-testid="select-user-role"
-            >
-              <option value="staff">Aisyah · Staff</option>
-              <option value="owner">Mr. Tan · Owner</option>
-            </select>
-          </div>
-        </div>
-      </header>
+      <AppHeader businesses={businesses} isLoading={isLoadingBusinesses} />
 
       <main className="content-wrap">
         <section className="page-heading" aria-labelledby="dashboard-heading">
@@ -295,21 +278,24 @@ export default function Dashboard() {
                 </div>
                 {result.options.length > 0 ? (
                   <div className="options-grid">
-                    {result.options.map((option, index) => <OptionCard option={option} index={index} key={option.id} />)}
+                    {result.options.map((option, index) => <OptionCard option={option} index={index} key={option.id} preparing={preparing === option.id} disabled={!!preparing} onPrepare={() => result.alert && prepare(result.alert.id, option.id)} />)}
                   </div>
                 ) : (
                   <div className="info-card empty-state" data-testid="options-empty"><strong>No options for this warning</strong>Check the forecast again later.</div>
                 )}
+                {prepareError && <div className="error-box compact" role="alert" data-testid="prepare-error"><span>{prepareError}</span></div>}
               </section>
             )}
           </div>
         )}
 
+        {!noBusiness && <CampaignStudio key={businessId} business={selectedBusiness} selectedId={draftId} onSelect={setDraftId} />}
+
         <div className="below-grid">
           <section className="info-card" data-testid="role-awareness-card">
             <div className="info-label">Your workspace</div>
             <h3>{user === 'owner' ? 'Owner view' : 'Staff view'} <span style={{ color: 'hsl(var(--primary))' }}>·</span> {user === 'owner' ? 'Mr. Tan' : 'Aisyah'}</h3>
-            <p>{user === 'owner' ? 'You are viewing this dashboard as the business owner. Campaign drafting and approvals arrive in Stage 3.' : 'You are viewing this dashboard as a staff member. You can review warnings and campaign options here.'}</p>
+            <p>{user === 'owner' ? 'You are viewing this dashboard as the business owner. You approve or reject drafts that staff submit. Approval publishes a simulated campaign.' : 'You are viewing this dashboard as a staff member. You can prepare campaign drafts and submit them to the owner.'}</p>
           </section>
           <section className="info-card" data-testid="forecast-context-card">
             <div className="risk-note">
