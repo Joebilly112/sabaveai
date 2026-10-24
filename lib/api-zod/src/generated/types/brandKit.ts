@@ -5,29 +5,79 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BrandKitApproverUserId } from './brandKitApproverUserId';
 import type { BrandKitChannelsItem } from './brandKitChannelsItem';
 import type { BrandKitLanguage } from './brandKitLanguage';
 import type { Product } from './product';
 
 export interface BrandKit {
   logoPath?: string;
+  /** @maxLength 2796250 */
+  logoDataUrl?: string;
+  /** @maxLength 2796250 */
+  pastPosterDataUrl?: string;
+  pastPosterPath?: string;
+  /**
+     * @minItems 1
+     * @maxItems 3
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
   brandColours: string[];
   posterPath?: string;
+  /**
+     * @maxItems 5
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
   posterColours?: string[];
+  /** @maxLength 2000 */
   posterDescription?: string;
+  /** @maxLength 3000 */
   posterStyleSummary?: string;
+  /** @maxLength 2000 */
   websiteUrl?: string;
+  /** @maxLength 3000 */
   websiteVoiceSummary?: string;
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
   ethos: string;
+  /**
+     * @maxItems 20
+     * @items.minLength 1
+     * @items.maxLength 80
+     */
   toneChips: string[];
+  /**
+     * @minItems 1
+     * @maxItems 100
+     */
   products: Product[];
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
   targetCustomers: string;
   delivery: boolean;
   channels: BrandKitChannelsItem[];
   language: BrandKitLanguage;
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
   neverSay: string[];
+  /**
+     * @minimum 0
+     * @maximum 1000000
+     */
   monthlyAdBudgetCapRM: number;
-  approverUserId: string;
+  approverUserId: BrandKitApproverUserId;
+  /** @minimum 0 */
   baselineWeeklySalesRM: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
   lastBadWeatherDipPct: number;
 }

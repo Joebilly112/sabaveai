@@ -15,6 +15,58 @@ tags:
   - name: forecast
     description: Weather signal forecasts
 paths:
+  /brand/analyze-poster:
+    post:
+      operationId: analyzePoster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PosterAnalysisInput" }
+      responses:
+        "200":
+          description: Text-only poster analysis, or deterministic fallback
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosterAnalysis" }
+  /brand/analyze-website:
+    post:
+      operationId: analyzeWebsite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WebsiteAnalysisInput" }
+      responses:
+        "200":
+          description: Website voice analysis or fallback
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WebsiteAnalysis" }
+  /businesses/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: getBusiness
+      responses:
+        "200":
+          description: Business
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Business" }
+    patch:
+      operationId: updateBusiness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BusinessInput" }
+      responses:
+        "200":
+          description: Updated business
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Business" }
   /ai/status:
     get:
       operationId: getAIStatus
@@ -141,6 +193,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
   /businesses:
+    post:
+      operationId: createBusiness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BusinessInput" }
+      responses:
+        "200":
+          description: Created business
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Business" }
     get:
       operationId: listBusinesses
       tags: [businesses]
@@ -192,6 +257,60 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    BusinessInput:
+      type: object
+      required: [name, type, city, lat, lon, brandKit]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 150 }
+        type: { type: string, enum: [cafe, laundromat, retail, other] }
+        city: { type: string, minLength: 1, maxLength: 150 }
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lon: { type: number, minimum: -180, maximum: 180 }
+        brandKit: { $ref: "#/components/schemas/BrandKit" }
+    PosterAnalysisInput:
+      type: object
+      required: [colours, description, toneChips]
+      properties:
+        businessId: { type: string }
+        colours:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        toneChips:
+          type: array
+          maxItems: 20
+          items: { type: string, maxLength: 80 }
+    PosterAnalysis:
+      type: object
+      required: [fallback, summary]
+      properties:
+        fallback: { type: boolean }
+        summary: { type: string }
+        layout: { type: string }
+        typographyStyle: { type: string }
+        tone: { type: string }
+        model: { type: string }
+    WebsiteAnalysisInput:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, minLength: 1, maxLength: 2000 }
+        businessId: { type: string }
+    WebsiteAnalysis:
+      type: object
+      required: [fallback]
+      properties:
+        fallback: { type: boolean }
+        voiceSummary: { type: string }
+        keyThemes:
+          type: array
+          items: { type: string }
+        suggestedTone:
+          type: array
+          items: { type: string }
+        model: { type: string }
     RegenerationInput:
       type: object
       required: [draftId]
@@ -390,36 +509,62 @@ components:
       properties:
         logoPath:
           type: string
+        logoDataUrl:
+          type: string
+          maxLength: 2796250
+        pastPosterDataUrl:
+          type: string
+          maxLength: 2796250
+        pastPosterPath:
+          type: string
         brandColours:
           type: array
+          minItems: 1
+          maxItems: 3
           items:
             type: string
+            pattern: "^#[0-9A-Fa-f]{6}$"
         posterPath:
           type: string
         posterColours:
           type: array
+          maxItems: 5
           items:
             type: string
+            pattern: "^#[0-9A-Fa-f]{6}$"
         posterDescription:
           type: string
+          maxLength: 2000
         posterStyleSummary:
           type: string
+          maxLength: 3000
         websiteUrl:
           type: string
+          maxLength: 2000
         websiteVoiceSummary:
           type: string
+          maxLength: 3000
         ethos:
           type: string
+          minLength: 1
+          maxLength: 2000
         toneChips:
           type: array
+          maxItems: 20
           items:
             type: string
+            minLength: 1
+            maxLength: 80
         products:
           type: array
+          minItems: 1
+          maxItems: 100
           items:
             $ref: "#/components/schemas/Product"
         targetCustomers:
           type: string
+          minLength: 1
+          maxLength: 2000
         delivery:
           type: boolean
         channels:
@@ -432,16 +577,25 @@ components:
           enum: [bm, en, both]
         neverSay:
           type: array
+          maxItems: 100
           items:
             type: string
+            minLength: 1
+            maxLength: 100
         monthlyAdBudgetCapRM:
           type: number
+          minimum: 0
+          maximum: 1000000
         approverUserId:
           type: string
+          enum: [u2]
         baselineWeeklySalesRM:
           type: number
+          minimum: 0
         lastBadWeatherDipPct:
           type: number
+          minimum: 0
+          maximum: 100
       required:
         - brandColours
         - ethos
@@ -461,8 +615,11 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
+          maxLength: 150
         priceRM:
           type: number
+          minimum: 0
       required: [name, priceRM]
     SignalForecast:
       type: object

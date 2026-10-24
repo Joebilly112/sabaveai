@@ -4,6 +4,7 @@ import forecastRouter from "./forecast";
 import healthRouter from "./health";
 import triggerRouter from "./trigger";
 import draftsRouter from "./drafts";
+import brandRouter from "./brand";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(businessesRouter);
 router.use(forecastRouter);
 router.use(triggerRouter);
 router.use(draftsRouter);
+router.use(brandRouter);
 
 export default router;

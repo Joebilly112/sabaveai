@@ -5,6 +5,195 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type BusinessInputType = typeof BusinessInputType[keyof typeof BusinessInputType];
+
+
+export const BusinessInputType = {
+  cafe: 'cafe',
+  laundromat: 'laundromat',
+  retail: 'retail',
+  other: 'other',
+} as const;
+
+export interface Product {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  /** @minimum 0 */
+  priceRM: number;
+}
+
+export type BrandKitChannelsItem = typeof BrandKitChannelsItem[keyof typeof BrandKitChannelsItem];
+
+
+export const BrandKitChannelsItem = {
+  facebook: 'facebook',
+  instagram: 'instagram',
+  whatsapp: 'whatsapp',
+  tiktok: 'tiktok',
+} as const;
+
+export type BrandKitLanguage = typeof BrandKitLanguage[keyof typeof BrandKitLanguage];
+
+
+export const BrandKitLanguage = {
+  bm: 'bm',
+  en: 'en',
+  both: 'both',
+} as const;
+
+export type BrandKitApproverUserId = typeof BrandKitApproverUserId[keyof typeof BrandKitApproverUserId];
+
+
+export const BrandKitApproverUserId = {
+  u2: 'u2',
+} as const;
+
+export interface BrandKit {
+  logoPath?: string;
+  /** @maxLength 2796250 */
+  logoDataUrl?: string;
+  /** @maxLength 2796250 */
+  pastPosterDataUrl?: string;
+  pastPosterPath?: string;
+  /**
+     * @minItems 1
+     * @maxItems 3
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
+  brandColours: string[];
+  posterPath?: string;
+  /**
+     * @maxItems 5
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
+  posterColours?: string[];
+  /** @maxLength 2000 */
+  posterDescription?: string;
+  /** @maxLength 3000 */
+  posterStyleSummary?: string;
+  /** @maxLength 2000 */
+  websiteUrl?: string;
+  /** @maxLength 3000 */
+  websiteVoiceSummary?: string;
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  ethos: string;
+  /**
+     * @maxItems 20
+     * @items.minLength 1
+     * @items.maxLength 80
+     */
+  toneChips: string[];
+  /**
+     * @minItems 1
+     * @maxItems 100
+     */
+  products: Product[];
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  targetCustomers: string;
+  delivery: boolean;
+  channels: BrandKitChannelsItem[];
+  language: BrandKitLanguage;
+  /**
+     * @maxItems 100
+     * @items.minLength 1
+     * @items.maxLength 100
+     */
+  neverSay: string[];
+  /**
+     * @minimum 0
+     * @maximum 1000000
+     */
+  monthlyAdBudgetCapRM: number;
+  approverUserId: BrandKitApproverUserId;
+  /** @minimum 0 */
+  baselineWeeklySalesRM: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  lastBadWeatherDipPct: number;
+}
+
+export interface BusinessInput {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  type: BusinessInputType;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  city: string;
+  /**
+     * @minimum -90
+     * @maximum 90
+     */
+  lat: number;
+  /**
+     * @minimum -180
+     * @maximum 180
+     */
+  lon: number;
+  brandKit: BrandKit;
+}
+
+export interface PosterAnalysisInput {
+  businessId?: string;
+  /**
+     * @minItems 1
+     * @maxItems 5
+     * @items.pattern ^#[0-9A-Fa-f]{6}$
+     */
+  colours: string[];
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  description: string;
+  /**
+     * @maxItems 20
+     * @items.maxLength 80
+     */
+  toneChips: string[];
+}
+
+export interface PosterAnalysis {
+  fallback: boolean;
+  summary: string;
+  layout?: string;
+  typographyStyle?: string;
+  tone?: string;
+  model?: string;
+}
+
+export interface WebsiteAnalysisInput {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  url: string;
+  businessId?: string;
+}
+
+export interface WebsiteAnalysis {
+  fallback: boolean;
+  voiceSummary?: string;
+  keyThemes?: string[];
+  suggestedTone?: string[];
+  model?: string;
+}
+
 export interface RegenerationInput {
   /** @minLength 1 */
   draftId: string;
@@ -288,53 +477,6 @@ export const BusinessType = {
 export interface SocialPages {
   facebookPageId: string;
   instagramHandle: string;
-}
-
-export interface Product {
-  name: string;
-  priceRM: number;
-}
-
-export type BrandKitChannelsItem = typeof BrandKitChannelsItem[keyof typeof BrandKitChannelsItem];
-
-
-export const BrandKitChannelsItem = {
-  facebook: 'facebook',
-  instagram: 'instagram',
-  whatsapp: 'whatsapp',
-  tiktok: 'tiktok',
-} as const;
-
-export type BrandKitLanguage = typeof BrandKitLanguage[keyof typeof BrandKitLanguage];
-
-
-export const BrandKitLanguage = {
-  bm: 'bm',
-  en: 'en',
-  both: 'both',
-} as const;
-
-export interface BrandKit {
-  logoPath?: string;
-  brandColours: string[];
-  posterPath?: string;
-  posterColours?: string[];
-  posterDescription?: string;
-  posterStyleSummary?: string;
-  websiteUrl?: string;
-  websiteVoiceSummary?: string;
-  ethos: string;
-  toneChips: string[];
-  products: Product[];
-  targetCustomers: string;
-  delivery: boolean;
-  channels: BrandKitChannelsItem[];
-  language: BrandKitLanguage;
-  neverSay: string[];
-  monthlyAdBudgetCapRM: number;
-  approverUserId: string;
-  baselineWeeklySalesRM: number;
-  lastBadWeatherDipPct: number;
 }
 
 export interface Business {

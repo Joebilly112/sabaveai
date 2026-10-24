@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import offlineForecast from "../../../../data/offlineForecast.json";
 import type { Business, SignalDay, SignalForecast } from "../lib/types";
 import type { WeatherSignal } from "./signal";
 
@@ -66,12 +65,7 @@ function makeForecast(
 }
 
 function offlineValues(): number[] {
-  const raw = JSON.parse(
-    readFileSync(
-      join(process.cwd(), "..", "..", "data", "offlineForecast.json"),
-      "utf8",
-    ),
-  ) as OfflineForecast;
+  const raw = offlineForecast as OfflineForecast;
   return raw.haze;
 }
 

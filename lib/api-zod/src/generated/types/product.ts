@@ -7,6 +7,11 @@
  */
 
 export interface Product {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   name: string;
+  /** @minimum 0 */
   priceRM: number;
 }

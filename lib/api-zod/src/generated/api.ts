@@ -8,6 +8,328 @@
 import * as zod from 'zod';
 
 
+export const analyzePosterBodyColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const analyzePosterBodyColoursMax = 5;
+
+export const analyzePosterBodyDescriptionMax = 2000;
+
+export const analyzePosterBodyToneChipsItemMax = 80;
+
+export const analyzePosterBodyToneChipsMax = 20;
+
+
+
+export const AnalyzePosterBody = zod.object({
+  "businessId": zod.string().optional(),
+  "colours": zod.array(zod.string().regex(analyzePosterBodyColoursItemRegExp)).min(1).max(analyzePosterBodyColoursMax),
+  "description": zod.string().min(1).max(analyzePosterBodyDescriptionMax),
+  "toneChips": zod.array(zod.string().max(analyzePosterBodyToneChipsItemMax)).max(analyzePosterBodyToneChipsMax)
+})
+
+export const AnalyzePosterResponse = zod.object({
+  "fallback": zod.boolean(),
+  "summary": zod.string(),
+  "layout": zod.string().optional(),
+  "typographyStyle": zod.string().optional(),
+  "tone": zod.string().optional(),
+  "model": zod.string().optional()
+})
+
+
+export const analyzeWebsiteBodyUrlMax = 2000;
+
+
+
+export const AnalyzeWebsiteBody = zod.object({
+  "url": zod.string().min(1).max(analyzeWebsiteBodyUrlMax),
+  "businessId": zod.string().optional()
+})
+
+export const AnalyzeWebsiteResponse = zod.object({
+  "fallback": zod.boolean(),
+  "voiceSummary": zod.string().optional(),
+  "keyThemes": zod.array(zod.string()).optional(),
+  "suggestedTone": zod.array(zod.string()).optional(),
+  "model": zod.string().optional()
+})
+
+
+export const GetBusinessParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const getBusinessResponseBrandKitLogoDataUrlMax = 2796250;
+
+export const getBusinessResponseBrandKitPastPosterDataUrlMax = 2796250;
+
+export const getBusinessResponseBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getBusinessResponseBrandKitBrandColoursMax = 3;
+
+export const getBusinessResponseBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const getBusinessResponseBrandKitPosterColoursMax = 5;
+
+export const getBusinessResponseBrandKitPosterDescriptionMax = 2000;
+
+export const getBusinessResponseBrandKitPosterStyleSummaryMax = 3000;
+
+export const getBusinessResponseBrandKitWebsiteUrlMax = 2000;
+
+export const getBusinessResponseBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const getBusinessResponseBrandKitEthosMax = 2000;
+
+export const getBusinessResponseBrandKitToneChipsItemMax = 80;
+
+export const getBusinessResponseBrandKitToneChipsMax = 20;
+
+export const getBusinessResponseBrandKitProductsItemNameMax = 150;
+
+export const getBusinessResponseBrandKitProductsItemPriceRMMin = 0;
+
+export const getBusinessResponseBrandKitProductsMax = 100;
+
+export const getBusinessResponseBrandKitTargetCustomersMax = 2000;
+
+export const getBusinessResponseBrandKitNeverSayItemMax = 100;
+
+export const getBusinessResponseBrandKitNeverSayMax = 100;
+
+export const getBusinessResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const getBusinessResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const getBusinessResponseBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const getBusinessResponseBrandKitLastBadWeatherDipPctMin = 0;
+export const getBusinessResponseBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
+export const GetBusinessResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "city": zod.string(),
+  "lat": zod.number(),
+  "lon": zod.number(),
+  "socialPages": zod.object({
+  "facebookPageId": zod.string(),
+  "instagramHandle": zod.string()
+}),
+  "brandKit": zod.object({
+  "logoPath": zod.string().optional(),
+  "logoDataUrl": zod.string().max(getBusinessResponseBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(getBusinessResponseBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(getBusinessResponseBrandKitBrandColoursItemRegExp)).min(1).max(getBusinessResponseBrandKitBrandColoursMax),
+  "posterPath": zod.string().optional(),
+  "posterColours": zod.array(zod.string().regex(getBusinessResponseBrandKitPosterColoursItemRegExp)).max(getBusinessResponseBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(getBusinessResponseBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(getBusinessResponseBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(getBusinessResponseBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(getBusinessResponseBrandKitWebsiteVoiceSummaryMax).optional(),
+  "ethos": zod.string().min(1).max(getBusinessResponseBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(getBusinessResponseBrandKitToneChipsItemMax)).max(getBusinessResponseBrandKitToneChipsMax),
+  "products": zod.array(zod.object({
+  "name": zod.string().min(1).max(getBusinessResponseBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(getBusinessResponseBrandKitProductsItemPriceRMMin)
+})).min(1).max(getBusinessResponseBrandKitProductsMax),
+  "targetCustomers": zod.string().min(1).max(getBusinessResponseBrandKitTargetCustomersMax),
+  "delivery": zod.boolean(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "language": zod.enum(['bm', 'en', 'both']),
+  "neverSay": zod.array(zod.string().min(1).max(getBusinessResponseBrandKitNeverSayItemMax)).max(getBusinessResponseBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(getBusinessResponseBrandKitMonthlyAdBudgetCapRMMin).max(getBusinessResponseBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.enum(['u2']),
+  "baselineWeeklySalesRM": zod.number().min(getBusinessResponseBrandKitBaselineWeeklySalesRMMin),
+  "lastBadWeatherDipPct": zod.number().min(getBusinessResponseBrandKitLastBadWeatherDipPctMin).max(getBusinessResponseBrandKitLastBadWeatherDipPctMax)
+})
+})
+
+
+export const UpdateBusinessParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const updateBusinessBodyNameMax = 150;
+
+export const updateBusinessBodyCityMax = 150;
+
+export const updateBusinessBodyLatMin = -90;
+export const updateBusinessBodyLatMax = 90;
+
+export const updateBusinessBodyLonMin = -180;
+export const updateBusinessBodyLonMax = 180;
+
+export const updateBusinessBodyBrandKitLogoDataUrlMax = 2796250;
+
+export const updateBusinessBodyBrandKitPastPosterDataUrlMax = 2796250;
+
+export const updateBusinessBodyBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateBusinessBodyBrandKitBrandColoursMax = 3;
+
+export const updateBusinessBodyBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateBusinessBodyBrandKitPosterColoursMax = 5;
+
+export const updateBusinessBodyBrandKitPosterDescriptionMax = 2000;
+
+export const updateBusinessBodyBrandKitPosterStyleSummaryMax = 3000;
+
+export const updateBusinessBodyBrandKitWebsiteUrlMax = 2000;
+
+export const updateBusinessBodyBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const updateBusinessBodyBrandKitEthosMax = 2000;
+
+export const updateBusinessBodyBrandKitToneChipsItemMax = 80;
+
+export const updateBusinessBodyBrandKitToneChipsMax = 20;
+
+export const updateBusinessBodyBrandKitProductsItemNameMax = 150;
+
+export const updateBusinessBodyBrandKitProductsItemPriceRMMin = 0;
+
+export const updateBusinessBodyBrandKitProductsMax = 100;
+
+export const updateBusinessBodyBrandKitTargetCustomersMax = 2000;
+
+export const updateBusinessBodyBrandKitNeverSayItemMax = 100;
+
+export const updateBusinessBodyBrandKitNeverSayMax = 100;
+
+export const updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const updateBusinessBodyBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const updateBusinessBodyBrandKitLastBadWeatherDipPctMin = 0;
+export const updateBusinessBodyBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
+export const UpdateBusinessBody = zod.object({
+  "name": zod.string().min(1).max(updateBusinessBodyNameMax),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "city": zod.string().min(1).max(updateBusinessBodyCityMax),
+  "lat": zod.number().min(updateBusinessBodyLatMin).max(updateBusinessBodyLatMax),
+  "lon": zod.number().min(updateBusinessBodyLonMin).max(updateBusinessBodyLonMax),
+  "brandKit": zod.object({
+  "logoPath": zod.string().optional(),
+  "logoDataUrl": zod.string().max(updateBusinessBodyBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(updateBusinessBodyBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(updateBusinessBodyBrandKitBrandColoursItemRegExp)).min(1).max(updateBusinessBodyBrandKitBrandColoursMax),
+  "posterPath": zod.string().optional(),
+  "posterColours": zod.array(zod.string().regex(updateBusinessBodyBrandKitPosterColoursItemRegExp)).max(updateBusinessBodyBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(updateBusinessBodyBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(updateBusinessBodyBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(updateBusinessBodyBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(updateBusinessBodyBrandKitWebsiteVoiceSummaryMax).optional(),
+  "ethos": zod.string().min(1).max(updateBusinessBodyBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(updateBusinessBodyBrandKitToneChipsItemMax)).max(updateBusinessBodyBrandKitToneChipsMax),
+  "products": zod.array(zod.object({
+  "name": zod.string().min(1).max(updateBusinessBodyBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(updateBusinessBodyBrandKitProductsItemPriceRMMin)
+})).min(1).max(updateBusinessBodyBrandKitProductsMax),
+  "targetCustomers": zod.string().min(1).max(updateBusinessBodyBrandKitTargetCustomersMax),
+  "delivery": zod.boolean(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "language": zod.enum(['bm', 'en', 'both']),
+  "neverSay": zod.array(zod.string().min(1).max(updateBusinessBodyBrandKitNeverSayItemMax)).max(updateBusinessBodyBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMin).max(updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.enum(['u2']),
+  "baselineWeeklySalesRM": zod.number().min(updateBusinessBodyBrandKitBaselineWeeklySalesRMMin),
+  "lastBadWeatherDipPct": zod.number().min(updateBusinessBodyBrandKitLastBadWeatherDipPctMin).max(updateBusinessBodyBrandKitLastBadWeatherDipPctMax)
+})
+})
+
+export const updateBusinessResponseBrandKitLogoDataUrlMax = 2796250;
+
+export const updateBusinessResponseBrandKitPastPosterDataUrlMax = 2796250;
+
+export const updateBusinessResponseBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateBusinessResponseBrandKitBrandColoursMax = 3;
+
+export const updateBusinessResponseBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const updateBusinessResponseBrandKitPosterColoursMax = 5;
+
+export const updateBusinessResponseBrandKitPosterDescriptionMax = 2000;
+
+export const updateBusinessResponseBrandKitPosterStyleSummaryMax = 3000;
+
+export const updateBusinessResponseBrandKitWebsiteUrlMax = 2000;
+
+export const updateBusinessResponseBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const updateBusinessResponseBrandKitEthosMax = 2000;
+
+export const updateBusinessResponseBrandKitToneChipsItemMax = 80;
+
+export const updateBusinessResponseBrandKitToneChipsMax = 20;
+
+export const updateBusinessResponseBrandKitProductsItemNameMax = 150;
+
+export const updateBusinessResponseBrandKitProductsItemPriceRMMin = 0;
+
+export const updateBusinessResponseBrandKitProductsMax = 100;
+
+export const updateBusinessResponseBrandKitTargetCustomersMax = 2000;
+
+export const updateBusinessResponseBrandKitNeverSayItemMax = 100;
+
+export const updateBusinessResponseBrandKitNeverSayMax = 100;
+
+export const updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const updateBusinessResponseBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const updateBusinessResponseBrandKitLastBadWeatherDipPctMin = 0;
+export const updateBusinessResponseBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
+export const UpdateBusinessResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "city": zod.string(),
+  "lat": zod.number(),
+  "lon": zod.number(),
+  "socialPages": zod.object({
+  "facebookPageId": zod.string(),
+  "instagramHandle": zod.string()
+}),
+  "brandKit": zod.object({
+  "logoPath": zod.string().optional(),
+  "logoDataUrl": zod.string().max(updateBusinessResponseBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(updateBusinessResponseBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(updateBusinessResponseBrandKitBrandColoursItemRegExp)).min(1).max(updateBusinessResponseBrandKitBrandColoursMax),
+  "posterPath": zod.string().optional(),
+  "posterColours": zod.array(zod.string().regex(updateBusinessResponseBrandKitPosterColoursItemRegExp)).max(updateBusinessResponseBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(updateBusinessResponseBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(updateBusinessResponseBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(updateBusinessResponseBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(updateBusinessResponseBrandKitWebsiteVoiceSummaryMax).optional(),
+  "ethos": zod.string().min(1).max(updateBusinessResponseBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(updateBusinessResponseBrandKitToneChipsItemMax)).max(updateBusinessResponseBrandKitToneChipsMax),
+  "products": zod.array(zod.object({
+  "name": zod.string().min(1).max(updateBusinessResponseBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(updateBusinessResponseBrandKitProductsItemPriceRMMin)
+})).min(1).max(updateBusinessResponseBrandKitProductsMax),
+  "targetCustomers": zod.string().min(1).max(updateBusinessResponseBrandKitTargetCustomersMax),
+  "delivery": zod.boolean(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "language": zod.enum(['bm', 'en', 'both']),
+  "neverSay": zod.array(zod.string().min(1).max(updateBusinessResponseBrandKitNeverSayItemMax)).max(updateBusinessResponseBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMin).max(updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.enum(['u2']),
+  "baselineWeeklySalesRM": zod.number().min(updateBusinessResponseBrandKitBaselineWeeklySalesRMMin),
+  "lastBadWeatherDipPct": zod.number().min(updateBusinessResponseBrandKitLastBadWeatherDipPctMin).max(updateBusinessResponseBrandKitLastBadWeatherDipPctMax)
+})
+})
+
+
 export const GetAIStatusResponse = zod.object({
   "configured": zod.boolean(),
   "model": zod.string().optional()
@@ -479,9 +801,235 @@ export const HealthCheckResponse = zod.object({
 })
 
 
+export const createBusinessBodyNameMax = 150;
+
+export const createBusinessBodyCityMax = 150;
+
+export const createBusinessBodyLatMin = -90;
+export const createBusinessBodyLatMax = 90;
+
+export const createBusinessBodyLonMin = -180;
+export const createBusinessBodyLonMax = 180;
+
+export const createBusinessBodyBrandKitLogoDataUrlMax = 2796250;
+
+export const createBusinessBodyBrandKitPastPosterDataUrlMax = 2796250;
+
+export const createBusinessBodyBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const createBusinessBodyBrandKitBrandColoursMax = 3;
+
+export const createBusinessBodyBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const createBusinessBodyBrandKitPosterColoursMax = 5;
+
+export const createBusinessBodyBrandKitPosterDescriptionMax = 2000;
+
+export const createBusinessBodyBrandKitPosterStyleSummaryMax = 3000;
+
+export const createBusinessBodyBrandKitWebsiteUrlMax = 2000;
+
+export const createBusinessBodyBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const createBusinessBodyBrandKitEthosMax = 2000;
+
+export const createBusinessBodyBrandKitToneChipsItemMax = 80;
+
+export const createBusinessBodyBrandKitToneChipsMax = 20;
+
+export const createBusinessBodyBrandKitProductsItemNameMax = 150;
+
+export const createBusinessBodyBrandKitProductsItemPriceRMMin = 0;
+
+export const createBusinessBodyBrandKitProductsMax = 100;
+
+export const createBusinessBodyBrandKitTargetCustomersMax = 2000;
+
+export const createBusinessBodyBrandKitNeverSayItemMax = 100;
+
+export const createBusinessBodyBrandKitNeverSayMax = 100;
+
+export const createBusinessBodyBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const createBusinessBodyBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const createBusinessBodyBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const createBusinessBodyBrandKitLastBadWeatherDipPctMin = 0;
+export const createBusinessBodyBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
+export const CreateBusinessBody = zod.object({
+  "name": zod.string().min(1).max(createBusinessBodyNameMax),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "city": zod.string().min(1).max(createBusinessBodyCityMax),
+  "lat": zod.number().min(createBusinessBodyLatMin).max(createBusinessBodyLatMax),
+  "lon": zod.number().min(createBusinessBodyLonMin).max(createBusinessBodyLonMax),
+  "brandKit": zod.object({
+  "logoPath": zod.string().optional(),
+  "logoDataUrl": zod.string().max(createBusinessBodyBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(createBusinessBodyBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(createBusinessBodyBrandKitBrandColoursItemRegExp)).min(1).max(createBusinessBodyBrandKitBrandColoursMax),
+  "posterPath": zod.string().optional(),
+  "posterColours": zod.array(zod.string().regex(createBusinessBodyBrandKitPosterColoursItemRegExp)).max(createBusinessBodyBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(createBusinessBodyBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(createBusinessBodyBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(createBusinessBodyBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(createBusinessBodyBrandKitWebsiteVoiceSummaryMax).optional(),
+  "ethos": zod.string().min(1).max(createBusinessBodyBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(createBusinessBodyBrandKitToneChipsItemMax)).max(createBusinessBodyBrandKitToneChipsMax),
+  "products": zod.array(zod.object({
+  "name": zod.string().min(1).max(createBusinessBodyBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(createBusinessBodyBrandKitProductsItemPriceRMMin)
+})).min(1).max(createBusinessBodyBrandKitProductsMax),
+  "targetCustomers": zod.string().min(1).max(createBusinessBodyBrandKitTargetCustomersMax),
+  "delivery": zod.boolean(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "language": zod.enum(['bm', 'en', 'both']),
+  "neverSay": zod.array(zod.string().min(1).max(createBusinessBodyBrandKitNeverSayItemMax)).max(createBusinessBodyBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(createBusinessBodyBrandKitMonthlyAdBudgetCapRMMin).max(createBusinessBodyBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.enum(['u2']),
+  "baselineWeeklySalesRM": zod.number().min(createBusinessBodyBrandKitBaselineWeeklySalesRMMin),
+  "lastBadWeatherDipPct": zod.number().min(createBusinessBodyBrandKitLastBadWeatherDipPctMin).max(createBusinessBodyBrandKitLastBadWeatherDipPctMax)
+})
+})
+
+export const createBusinessResponseBrandKitLogoDataUrlMax = 2796250;
+
+export const createBusinessResponseBrandKitPastPosterDataUrlMax = 2796250;
+
+export const createBusinessResponseBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const createBusinessResponseBrandKitBrandColoursMax = 3;
+
+export const createBusinessResponseBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const createBusinessResponseBrandKitPosterColoursMax = 5;
+
+export const createBusinessResponseBrandKitPosterDescriptionMax = 2000;
+
+export const createBusinessResponseBrandKitPosterStyleSummaryMax = 3000;
+
+export const createBusinessResponseBrandKitWebsiteUrlMax = 2000;
+
+export const createBusinessResponseBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const createBusinessResponseBrandKitEthosMax = 2000;
+
+export const createBusinessResponseBrandKitToneChipsItemMax = 80;
+
+export const createBusinessResponseBrandKitToneChipsMax = 20;
+
+export const createBusinessResponseBrandKitProductsItemNameMax = 150;
+
+export const createBusinessResponseBrandKitProductsItemPriceRMMin = 0;
+
+export const createBusinessResponseBrandKitProductsMax = 100;
+
+export const createBusinessResponseBrandKitTargetCustomersMax = 2000;
+
+export const createBusinessResponseBrandKitNeverSayItemMax = 100;
+
+export const createBusinessResponseBrandKitNeverSayMax = 100;
+
+export const createBusinessResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const createBusinessResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const createBusinessResponseBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const createBusinessResponseBrandKitLastBadWeatherDipPctMin = 0;
+export const createBusinessResponseBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
+export const CreateBusinessResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "city": zod.string(),
+  "lat": zod.number(),
+  "lon": zod.number(),
+  "socialPages": zod.object({
+  "facebookPageId": zod.string(),
+  "instagramHandle": zod.string()
+}),
+  "brandKit": zod.object({
+  "logoPath": zod.string().optional(),
+  "logoDataUrl": zod.string().max(createBusinessResponseBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(createBusinessResponseBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(createBusinessResponseBrandKitBrandColoursItemRegExp)).min(1).max(createBusinessResponseBrandKitBrandColoursMax),
+  "posterPath": zod.string().optional(),
+  "posterColours": zod.array(zod.string().regex(createBusinessResponseBrandKitPosterColoursItemRegExp)).max(createBusinessResponseBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(createBusinessResponseBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(createBusinessResponseBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(createBusinessResponseBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(createBusinessResponseBrandKitWebsiteVoiceSummaryMax).optional(),
+  "ethos": zod.string().min(1).max(createBusinessResponseBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(createBusinessResponseBrandKitToneChipsItemMax)).max(createBusinessResponseBrandKitToneChipsMax),
+  "products": zod.array(zod.object({
+  "name": zod.string().min(1).max(createBusinessResponseBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(createBusinessResponseBrandKitProductsItemPriceRMMin)
+})).min(1).max(createBusinessResponseBrandKitProductsMax),
+  "targetCustomers": zod.string().min(1).max(createBusinessResponseBrandKitTargetCustomersMax),
+  "delivery": zod.boolean(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "language": zod.enum(['bm', 'en', 'both']),
+  "neverSay": zod.array(zod.string().min(1).max(createBusinessResponseBrandKitNeverSayItemMax)).max(createBusinessResponseBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(createBusinessResponseBrandKitMonthlyAdBudgetCapRMMin).max(createBusinessResponseBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.enum(['u2']),
+  "baselineWeeklySalesRM": zod.number().min(createBusinessResponseBrandKitBaselineWeeklySalesRMMin),
+  "lastBadWeatherDipPct": zod.number().min(createBusinessResponseBrandKitLastBadWeatherDipPctMin).max(createBusinessResponseBrandKitLastBadWeatherDipPctMax)
+})
+})
+
+
 /**
  * @summary List demo businesses
  */
+export const listBusinessesResponseBrandKitLogoDataUrlMax = 2796250;
+
+export const listBusinessesResponseBrandKitPastPosterDataUrlMax = 2796250;
+
+export const listBusinessesResponseBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const listBusinessesResponseBrandKitBrandColoursMax = 3;
+
+export const listBusinessesResponseBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const listBusinessesResponseBrandKitPosterColoursMax = 5;
+
+export const listBusinessesResponseBrandKitPosterDescriptionMax = 2000;
+
+export const listBusinessesResponseBrandKitPosterStyleSummaryMax = 3000;
+
+export const listBusinessesResponseBrandKitWebsiteUrlMax = 2000;
+
+export const listBusinessesResponseBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const listBusinessesResponseBrandKitEthosMax = 2000;
+
+export const listBusinessesResponseBrandKitToneChipsItemMax = 80;
+
+export const listBusinessesResponseBrandKitToneChipsMax = 20;
+
+export const listBusinessesResponseBrandKitProductsItemNameMax = 150;
+
+export const listBusinessesResponseBrandKitProductsItemPriceRMMin = 0;
+
+export const listBusinessesResponseBrandKitProductsMax = 100;
+
+export const listBusinessesResponseBrandKitTargetCustomersMax = 2000;
+
+export const listBusinessesResponseBrandKitNeverSayItemMax = 100;
+
+export const listBusinessesResponseBrandKitNeverSayMax = 100;
+
+export const listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const listBusinessesResponseBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const listBusinessesResponseBrandKitLastBadWeatherDipPctMin = 0;
+export const listBusinessesResponseBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
 export const ListBusinessesResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
@@ -495,28 +1043,31 @@ export const ListBusinessesResponseItem = zod.object({
 }),
   "brandKit": zod.object({
   "logoPath": zod.string().optional(),
-  "brandColours": zod.array(zod.string()),
+  "logoDataUrl": zod.string().max(listBusinessesResponseBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(listBusinessesResponseBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(listBusinessesResponseBrandKitBrandColoursItemRegExp)).min(1).max(listBusinessesResponseBrandKitBrandColoursMax),
   "posterPath": zod.string().optional(),
-  "posterColours": zod.array(zod.string()).optional(),
-  "posterDescription": zod.string().optional(),
-  "posterStyleSummary": zod.string().optional(),
-  "websiteUrl": zod.string().optional(),
-  "websiteVoiceSummary": zod.string().optional(),
-  "ethos": zod.string(),
-  "toneChips": zod.array(zod.string()),
+  "posterColours": zod.array(zod.string().regex(listBusinessesResponseBrandKitPosterColoursItemRegExp)).max(listBusinessesResponseBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(listBusinessesResponseBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(listBusinessesResponseBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(listBusinessesResponseBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(listBusinessesResponseBrandKitWebsiteVoiceSummaryMax).optional(),
+  "ethos": zod.string().min(1).max(listBusinessesResponseBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(listBusinessesResponseBrandKitToneChipsItemMax)).max(listBusinessesResponseBrandKitToneChipsMax),
   "products": zod.array(zod.object({
-  "name": zod.string(),
-  "priceRM": zod.number()
-})),
-  "targetCustomers": zod.string(),
+  "name": zod.string().min(1).max(listBusinessesResponseBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(listBusinessesResponseBrandKitProductsItemPriceRMMin)
+})).min(1).max(listBusinessesResponseBrandKitProductsMax),
+  "targetCustomers": zod.string().min(1).max(listBusinessesResponseBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
-  "neverSay": zod.array(zod.string()),
-  "monthlyAdBudgetCapRM": zod.number(),
-  "approverUserId": zod.string(),
-  "baselineWeeklySalesRM": zod.number(),
-  "lastBadWeatherDipPct": zod.number()
+  "neverSay": zod.array(zod.string().min(1).max(listBusinessesResponseBrandKitNeverSayItemMax)).max(listBusinessesResponseBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMin).max(listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.enum(['u2']),
+  "baselineWeeklySalesRM": zod.number().min(listBusinessesResponseBrandKitBaselineWeeklySalesRMMin),
+  "lastBadWeatherDipPct": zod.number().min(listBusinessesResponseBrandKitLastBadWeatherDipPctMin).max(listBusinessesResponseBrandKitLastBadWeatherDipPctMax)
 })
 })
 export const ListBusinessesResponse = zod.array(ListBusinessesResponseItem)

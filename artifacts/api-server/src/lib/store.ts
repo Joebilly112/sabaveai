@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import seedBusinesses from "../../../../data/businesses.json";
 import { ListBusinessesResponse } from "@workspace/api-zod";
 import type {
   Business,
@@ -22,9 +21,10 @@ declare global {
 }
 
 function createState(): SabaveState {
-  const seedPath = join(process.cwd(), "..", "..", "data", "businesses.json");
-  const parsed: unknown = JSON.parse(readFileSync(seedPath, "utf8"));
-  const businesses = ListBusinessesResponse.parse(parsed) as Business[];
+  // esbuild embeds the JSON in the server bundle: no production cwd/file lookup.
+  const businesses = ListBusinessesResponse.parse(seedBusinesses).map(business => ({
+    ...business, brandKit: { ...business.brandKit, pastPosterPath: business.brandKit.pastPosterPath ?? business.brandKit.posterPath },
+  })) as Business[];
 
   return {
     businesses,

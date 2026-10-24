@@ -43,7 +43,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     userId: role === 'owner' ? 'u2' : 'u1',
     confirmLeave: () => {
       if (!dirtyRef.current) return true;
-      const ok = window.confirm('You have unsaved campaign edits. Leave and discard them?');
+      const ok = window.confirm('You have unsaved edits. Leave and discard them?');
       if (ok) setDirty(false);
       return ok;
     },
