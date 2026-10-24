@@ -5,6 +5,100 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type TriggerInputSignalId = typeof TriggerInputSignalId[keyof typeof TriggerInputSignalId];
+
+
+export const TriggerInputSignalId = {
+  haze: 'haze',
+} as const;
+
+export interface TriggerInput {
+  /** @minLength 1 */
+  businessId: string;
+  signalId: TriggerInputSignalId;
+  simulate?: boolean;
+}
+
+export type SignalForecastSignalId = typeof SignalForecastSignalId[keyof typeof SignalForecastSignalId];
+
+
+export const SignalForecastSignalId = {
+  haze: 'haze',
+} as const;
+
+export interface SignalDay {
+  date: string;
+  value: number;
+  unit: string;
+  /**
+     * @minimum 0
+     * @maximum 3
+     */
+  level: number;
+  levelLabel: string;
+  detail?: string;
+}
+
+export type SignalForecastSource = typeof SignalForecastSource[keyof typeof SignalForecastSource];
+
+
+export const SignalForecastSource = {
+  'open-meteo': 'open-meteo',
+  simulated: 'simulated',
+  offline: 'offline',
+} as const;
+
+export interface SignalForecast {
+  signalId: SignalForecastSignalId;
+  businessId: string;
+  days: SignalDay[];
+  source: SignalForecastSource;
+  fetchedAt: string;
+}
+
+export type WeatherAlertSignalId = typeof WeatherAlertSignalId[keyof typeof WeatherAlertSignalId];
+
+
+export const WeatherAlertSignalId = {
+  haze: 'haze',
+} as const;
+
+export interface WeatherAlert {
+  id: string;
+  businessId: string;
+  signalId: WeatherAlertSignalId;
+  affectedDates: string[];
+  peakDate: string;
+  peakLevelLabel: string;
+  daysAhead: number;
+  createdAt: string;
+  open: boolean;
+}
+
+export type CampaignOptionSignalId = typeof CampaignOptionSignalId[keyof typeof CampaignOptionSignalId];
+
+
+export const CampaignOptionSignalId = {
+  haze: 'haze',
+} as const;
+
+export interface CampaignOption {
+  id: string;
+  signalId: CampaignOptionSignalId;
+  kind: string;
+  title: string;
+  description: string;
+  reason: string;
+  offer: string;
+  suggestedBudgetRM: number;
+}
+
+export interface TriggerResult {
+  forecast: SignalForecast;
+  alert: WeatherAlert | null;
+  options: CampaignOption[];
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -84,43 +178,6 @@ export interface Business {
   lon: number;
   socialPages: SocialPages;
   brandKit: BrandKit;
-}
-
-export type SignalForecastSignalId = typeof SignalForecastSignalId[keyof typeof SignalForecastSignalId];
-
-
-export const SignalForecastSignalId = {
-  haze: 'haze',
-} as const;
-
-export type SignalForecastSource = typeof SignalForecastSource[keyof typeof SignalForecastSource];
-
-
-export const SignalForecastSource = {
-  'open-meteo': 'open-meteo',
-  simulated: 'simulated',
-  offline: 'offline',
-} as const;
-
-export interface SignalDay {
-  date: string;
-  value: number;
-  unit: string;
-  /**
-     * @minimum 0
-     * @maximum 3
-     */
-  level: number;
-  levelLabel: string;
-  detail?: string;
-}
-
-export interface SignalForecast {
-  signalId: SignalForecastSignalId;
-  businessId: string;
-  days: SignalDay[];
-  source: SignalForecastSource;
-  fetchedAt: string;
 }
 
 export type GetForecastParams = {

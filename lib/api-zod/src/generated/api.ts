@@ -9,6 +9,62 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Evaluate a live or simulated forecast and return campaign options
+ */
+
+
+
+export const TriggerSignalBody = zod.object({
+  "businessId": zod.string().min(1),
+  "signalId": zod.enum(['haze']),
+  "simulate": zod.boolean().optional()
+})
+
+export const triggerSignalResponseForecastDaysItemLevelMin = 0;
+export const triggerSignalResponseForecastDaysItemLevelMax = 3;
+
+
+
+export const TriggerSignalResponse = zod.object({
+  "forecast": zod.object({
+  "signalId": zod.enum(['haze']),
+  "businessId": zod.string(),
+  "days": zod.array(zod.object({
+  "date": zod.coerce.date(),
+  "value": zod.number(),
+  "unit": zod.string(),
+  "level": zod.number().int().min(triggerSignalResponseForecastDaysItemLevelMin).max(triggerSignalResponseForecastDaysItemLevelMax),
+  "levelLabel": zod.string(),
+  "detail": zod.string().optional()
+})),
+  "source": zod.enum(['open-meteo', 'simulated', 'offline']),
+  "fetchedAt": zod.coerce.date()
+}),
+  "alert": zod.union([zod.object({
+  "id": zod.string(),
+  "businessId": zod.string(),
+  "signalId": zod.enum(['haze']),
+  "affectedDates": zod.array(zod.string()),
+  "peakDate": zod.string(),
+  "peakLevelLabel": zod.string(),
+  "daysAhead": zod.number().int(),
+  "createdAt": zod.string(),
+  "open": zod.boolean()
+}),zod.null()]),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "signalId": zod.enum(['haze']),
+  "kind": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "reason": zod.string(),
+  "offer": zod.string(),
+  "suggestedBudgetRM": zod.number()
+}))
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

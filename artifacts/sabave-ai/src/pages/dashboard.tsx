@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { ArrowUpRight, CloudFog, RefreshCw, ShieldCheck, SunDim } from 'lucide-react';
-import {
-  getGetForecastQueryKey,
-  getListBusinessesQueryKey,
-  useGetForecast,
-  useListBusinesses,
-} from '@workspace/api-client-react';
-import type { Business, GetForecastParams, SignalDay, SignalForecast } from '@workspace/api-client-react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { ArrowUpRight, CloudFog, Leaf, RefreshCw, ShieldCheck, SunDim } from 'lucide-react';
+import { getListBusinessesQueryKey, useListBusinesses, useTriggerSignal } from '@workspace/api-client-react';
+import type { Business, SignalDay, SignalForecast, TriggerResult } from '@workspace/api-client-react';
+import { AlertCard } from '@/components/AlertCard';
+import { OptionCard } from '@/components/OptionCard';
 
 type ForecastAction = 'check' | 'simulate';
 
@@ -76,45 +73,52 @@ export default function Dashboard() {
   const [selectedId, setSelectedId] = useState('');
   const [user, setUser] = useState<'staff' | 'owner'>('staff');
   const [requestedAction, setRequestedAction] = useState<ForecastAction | null>(null);
-  const [forecastMode, setForecastMode] = useState<'live' | 'simulated'>('live');
-  const [requestCounter, setRequestCounter] = useState(0);
+  const [result, setResult] = useState<TriggerResult | null>(null);
+  const [triggerError, setTriggerError] = useState(false);
   const selectedBusiness = useMemo(
     () => businesses.find((business) => business.id === selectedId) || businesses[0],
     [businesses, selectedId],
   );
-  const params: GetForecastParams = {
-    businessId: selectedBusiness?.id || '',
-    signalId: 'haze',
-    mode: forecastMode,
-  };
-  const forecastQuery = useGetForecast(params, {
-    query: {
-      queryKey: [...getGetForecastQueryKey(params), requestCounter],
-      enabled: Boolean(selectedBusiness),
-      retry: false,
-      staleTime: 0,
-    },
-  });
-  const forecast = forecastQuery.data as SignalForecast | undefined;
-  const runForecast = (action: ForecastAction) => {
+  const businessId = selectedBusiness?.id || '';
+  const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': user === 'owner' ? 'u2' : 'u1' } } });
+  const mutateRef = useRef(trigger.mutateAsync);
+  mutateRef.current = trigger.mutateAsync;
+  const requestSeq = useRef(0);
+  const currentBusiness = useRef('');
+
+  const runForecast = useCallback(async (action: ForecastAction) => {
+    const id = currentBusiness.current;
+    if (!id) return;
+    const seq = ++requestSeq.current;
     setRequestedAction(action);
-    setForecastMode(action === 'simulate' ? 'simulated' : 'live');
-    setRequestCounter((count) => count + 1);
-  };
-  useEffect(() => {
-    if (
-      requestedAction &&
-      !forecastQuery.isFetching &&
-      (forecastQuery.isSuccess || forecastQuery.isError)
-    ) {
-      setRequestedAction(null);
+    setTriggerError(false);
+    setResult(null);
+    try {
+      const res = await mutateRef.current({ data: { businessId: id, signalId: 'haze', simulate: action === 'simulate' } });
+      if (seq !== requestSeq.current || id !== currentBusiness.current) return;
+      setResult(res);
+    } catch {
+      if (seq !== requestSeq.current || id !== currentBusiness.current) return;
+      setTriggerError(true);
+    } finally {
+      if (seq === requestSeq.current) setRequestedAction(null);
     }
-  }, [
-    requestedAction,
-    forecastQuery.isError,
-    forecastQuery.isFetching,
-    forecastQuery.isSuccess,
-  ]);
+  }, []);
+
+  useEffect(() => {
+    currentBusiness.current = businessId;
+    requestSeq.current += 1;
+    setResult(null);
+    setTriggerError(false);
+    setRequestedAction(null);
+    if (businessId) {
+      void runForecast('check');
+    }
+  }, [businessId, runForecast]);
+
+  const forecast = result && result.forecast.businessId === businessId ? result.forecast : undefined;
+  const isFetching = requestedAction !== null;
+  const forecastQuery = { isFetching, isError: triggerError };
   const isLoadingBusinesses = businessesQuery.isLoading;
   const noBusiness = !isLoadingBusinesses && businesses.length === 0;
 
@@ -202,7 +206,7 @@ export default function Dashboard() {
                 <button
                   className="action-btn primary"
                   onClick={() => runForecast('check')}
-                  disabled={!selectedBusiness || requestedAction !== null || forecastQuery.isFetching}
+                  disabled={!selectedBusiness || isFetching}
                   data-testid="button-check-forecast"
                 >
                   <RefreshCw size={14} className={requestedAction === 'check' ? 'animate-spin' : ''} />
@@ -211,7 +215,7 @@ export default function Dashboard() {
                 <button
                   className="action-btn"
                   onClick={() => runForecast('simulate')}
-                  disabled={!selectedBusiness || requestedAction !== null || forecastQuery.isFetching}
+                  disabled={!selectedBusiness || isFetching}
                   data-testid="button-simulate-forecast"
                 >
                   {requestedAction === 'simulate' ? <RefreshCw size={14} className="animate-spin" /> : <ArrowUpRight size={14} />}
@@ -267,11 +271,45 @@ export default function Dashboard() {
           </section>
         )}
 
+        {!noBusiness && forecast && result && !isFetching && (
+          <div className="signal-stack" data-testid="signal-results">
+            {result.alert ? (
+              <AlertCard alert={result.alert} city={selectedBusiness?.city || 'Malaysia'} salesDipPct={selectedBusiness?.brandKit?.lastBadWeatherDipPct} />
+            ) : (
+              <section className="calm-card" data-testid="alert-none">
+                <Leaf size={22} strokeWidth={1.7} />
+                <div>
+                  <h3>Clear skies for business</h3>
+                  <p>No haze warning for {selectedBusiness?.city || 'your area'} in the next five days. Nothing to act on right now.</p>
+                </div>
+              </section>
+            )}
+            {result.alert && (
+              <section aria-labelledby="options-heading" data-testid="campaign-options">
+                <div className="options-head">
+                  <div>
+                    <div className="info-label">Campaign options</div>
+                    <h3 id="options-heading">Ways to keep sales steady</h3>
+                  </div>
+                  <p>Each option explains why it fits this warning. Budgets are suggestions in RM.</p>
+                </div>
+                {result.options.length > 0 ? (
+                  <div className="options-grid">
+                    {result.options.map((option, index) => <OptionCard option={option} index={index} key={option.id} />)}
+                  </div>
+                ) : (
+                  <div className="info-card empty-state" data-testid="options-empty"><strong>No options for this warning</strong>Check the forecast again later.</div>
+                )}
+              </section>
+            )}
+          </div>
+        )}
+
         <div className="below-grid">
           <section className="info-card" data-testid="role-awareness-card">
             <div className="info-label">Your workspace</div>
             <h3>{user === 'owner' ? 'Owner view' : 'Staff view'} <span style={{ color: 'hsl(var(--primary))' }}>·</span> {user === 'owner' ? 'Mr. Tan' : 'Aisyah'}</h3>
-            <p>{user === 'owner' ? 'You are viewing this dashboard as the business owner. Campaign approvals are not part of this stage.' : 'You are viewing this dashboard as a staff member. This stage is for weather visibility only.'}</p>
+            <p>{user === 'owner' ? 'You are viewing this dashboard as the business owner. Campaign drafting and approvals arrive in Stage 3.' : 'You are viewing this dashboard as a staff member. You can review warnings and campaign options here.'}</p>
           </section>
           <section className="info-card" data-testid="forecast-context-card">
             <div className="risk-note">

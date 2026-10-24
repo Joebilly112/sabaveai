@@ -15,6 +15,23 @@ tags:
   - name: forecast
     description: Weather signal forecasts
 paths:
+  /trigger:
+    post:
+      operationId: triggerSignal
+      summary: Evaluate a live or simulated forecast and return campaign options
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TriggerInput"
+      responses:
+        "200":
+          description: Evaluated forecast
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriggerResult"
   /healthz:
     get:
       operationId: healthCheck
@@ -80,6 +97,54 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    TriggerInput:
+      type: object
+      required: [businessId, signalId]
+      properties:
+        businessId: { type: string, minLength: 1 }
+        signalId: { type: string, enum: [haze] }
+        simulate: { type: boolean }
+    TriggerResult:
+      type: object
+      required: [forecast, alert, options]
+      properties:
+        forecast:
+          $ref: "#/components/schemas/SignalForecast"
+        alert:
+          anyOf:
+            - $ref: "#/components/schemas/WeatherAlert"
+            - type: "null"
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignOption"
+    WeatherAlert:
+      type: object
+      required: [id, businessId, signalId, affectedDates, peakDate, peakLevelLabel, daysAhead, createdAt, open]
+      properties:
+        id: { type: string }
+        businessId: { type: string }
+        signalId: { type: string, enum: [haze] }
+        affectedDates:
+          type: array
+          items: { type: string }
+        peakDate: { type: string }
+        peakLevelLabel: { type: string }
+        daysAhead: { type: integer }
+        createdAt: { type: string }
+        open: { type: boolean }
+    CampaignOption:
+      type: object
+      required: [id, signalId, kind, title, description, reason, offer, suggestedBudgetRM]
+      properties:
+        id: { type: string }
+        signalId: { type: string, enum: [haze] }
+        kind: { type: string }
+        title: { type: string }
+        description: { type: string }
+        reason: { type: string }
+        offer: { type: string }
+        suggestedBudgetRM: { type: number }
     HealthStatus:
       type: object
       properties:

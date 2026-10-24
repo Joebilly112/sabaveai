@@ -6,11 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import {
+  useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -20,11 +24,13 @@ import type {
   Business,
   GetForecastParams,
   HealthStatus,
-  SignalForecast
+  SignalForecast,
+  TriggerInput,
+  TriggerResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
-import type { ErrorType } from '../custom-fetch';
+import type { ErrorType , BodyType } from '../custom-fetch';
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -49,6 +55,94 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getTriggerSignalUrl = () => {
+
+
+
+
+  return `/api/trigger`
+}
+
+/**
+ * @summary Evaluate a live or simulated forecast and return campaign options
+ */
+export const triggerSignal = async (triggerInput: TriggerInput, options?: Parameters<typeof customFetch>[1]): Promise<TriggerResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<TriggerResult>(getTriggerSignalUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(triggerInput)
+  }
+);}
+
+
+
+
+
+export const getTriggerSignalMutationKey = () => ['triggerSignal'] as const;
+
+export const getTriggerSignalMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerSignal>>, TError,TriggerSignalMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof triggerSignal>>, TError,TriggerSignalMutationVariables, TContext> => {
+
+const mutationKey = getTriggerSignalMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof triggerSignal>>, TriggerSignalMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  triggerSignal(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TriggerSignalMutationResult = NonNullable<Awaited<ReturnType<typeof triggerSignal>>>
+    export type TriggerSignalMutationBody = BodyType<TriggerInput>
+    export type TriggerSignalMutationError = ErrorType<unknown>
+    export type TriggerSignalMutationVariables = {data: BodyType<TriggerInput>}
+
+    /**
+ * @summary Evaluate a live or simulated forecast and return campaign options
+ */
+export const useTriggerSignal = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof triggerSignal>>, TError,TriggerSignalMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof triggerSignal>>,
+        TError,
+        TriggerSignalMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTriggerSignalMutationOptions(options));
+    }
 
 export const getHealthCheckUrl = () => {
 
