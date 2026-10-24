@@ -39,7 +39,7 @@ function Warn({ hits }: { hits: string[] }) {
 }
 
 export function CampaignStudio({ business, selectedId, onSelect }: { business?: Business; selectedId: string; onSelect: (id: string) => void }) {
-  const { userId, role, setDirty } = useWorkspace();
+  const { userId, role, setRole, setDirty } = useWorkspace();
   const businessId = business?.id || '';
   const qc = useQueryClient();
   const headers = { headers: { 'x-user-id': userId } };
@@ -117,7 +117,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
     try {
       const d = await update.mutateAsync({ data: submit ? { ...p, action: 'submit' } : p });
       refresh(d);
-      setNotice(submit ? 'Sent to the owner for approval.' : 'Changes saved.');
+      setNotice(submit ? '' : 'Changes saved.');
     } catch (e) { setError(apiErrorInfo(e)); } finally { setBusy(''); }
   };
 
@@ -156,6 +156,13 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
   const toggle = (c: DraftUpdateChannelsItem) => set('channels', form!.channels.includes(c) ? form!.channels.filter((x) => x !== c) : [...form!.channels, c]);
 
   if (!businessId) return null;
+  if (list.length === 0) {
+    return drafts.isError ? (
+      <div className="error-box compact" role="alert" data-testid="drafts-load-error">
+        <span>Drafts could not load.</span><button className="retry-btn" onClick={() => drafts.refetch()}>Try again</button>
+      </div>
+    ) : null;
+  }
 
   return (
     <section className="studio" aria-labelledby="studio-heading" data-testid="campaign-studio">
@@ -169,9 +176,6 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
           {drafts.isError && (
             <div className="error-box compact" role="alert"><span>Drafts could not load.</span><button className="retry-btn" onClick={() => drafts.refetch()}>Try again</button></div>
           )}
-          {!drafts.isLoading && !drafts.isError && list.length === 0 && (
-            <div className="empty-state small"><strong>No drafts yet</strong>Choose “Prepare campaign” on an option above.</div>
-          )}
           {list.map((d) => (
             <button key={d.id} className={`draft-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => openDraft(d.id)} disabled={!!busy && d.id !== selectedId} data-testid={`draft-item-${d.id}`}>
               <span className={`status-chip s-${d.status}`}>{STATUS_LABEL[d.status] || d.status}</span>
@@ -181,7 +185,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
           ))}
         </aside>
 
-        <div className="editor-card">
+        <div className="editor-card" id="draft-editor">
           {!draft || !form ? (
             <div className="empty-state"><FileText size={22} style={{ margin: '0 auto 8px', display: 'block' }} /><strong>Open a draft</strong>Pick a draft on the left, or prepare a new one from an option.</div>
           ) : (
@@ -190,9 +194,19 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
                 <div>
                   <span className={`status-chip s-${draft.status}`} data-testid="draft-status">{STATUS_LABEL[draft.status]}</span>
                   <span className={`source-pill ${draft.copy.source === 'ai' ? 'ai' : ''}`} style={{ marginLeft: 8 }} data-testid="copy-source"><i className="source-dot" />{draft.copy.source === 'ai' ? `AI (DeepSeek${draft.copy.model ? ` · ${draft.copy.model}` : ''})` : 'Template'}</span>
+                  {draft.status === 'pending_approval' && role === 'owner' && (
+                    <span className="awaiting-badge" role="status" data-testid="awaiting-approval-badge"><CheckCircle2 size={13} />Awaiting your approval</span>
+                  )}
                 </div>
                 {dirty && <span className="unsaved" data-testid="unsaved-indicator">Unsaved changes</span>}
               </div>
+
+              {draft.status === 'pending_approval' && role !== 'owner' && (
+                <div className="handoff-banner" role="status" data-testid="staff-handoff-banner">
+                  <div><strong>Sent to Mr. Tan (Owner) for approval</strong><span>Switch to the owner view to review the submitted draft.</span></div>
+                  <button className="action-btn" onClick={() => setRole('owner')} data-testid="button-switch-owner">Switch to Owner view</button>
+                </div>
+              )}
 
               {draft.copy.fallbackReason && (
                 <div className="fallback-note" role="note" aria-label="AI fallback notice" data-testid="text-fallback-reason"><Info size={14} /><div><strong>Template copy used.</strong> {draft.copy.fallbackReason}</div></div>
@@ -274,9 +288,6 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
                 </div>
               )}
 
-              {draft.status === 'pending_approval' && role !== 'owner' && (
-                <div className="notice">Waiting for the owner. Switch to Mr. Tan · Owner to review.</div>
-              )}
               {draft.status === 'pending_approval' && role === 'owner' && (
                 <div className="approval-box" data-testid="approval-controls">
                   <div className="info-label">Owner decision</div>

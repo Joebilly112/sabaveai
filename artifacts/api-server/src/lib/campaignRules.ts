@@ -22,14 +22,12 @@ export function campaignOptions(
   const discount = Math.min(2, product.priceRM);
   const offer = `${money(discount)} off ${product.name} (${money(product.priceRM)} → ${money(product.priceRM - discount)})`;
   const peakLevel = Math.max(...forecast.days.filter(d => alert.affectedDates.includes(d.date.slice(0, 10))).map(d => d.level));
-  const budget = suggestedBudget(business.brandKit.monthlyAdBudgetCapRM, peakLevel, alert.affectedDates.length);
-  const dates = alert.affectedDates.map(date => new Intl.DateTimeFormat("en-MY", {
-    day: "numeric", month: "short", timeZone: "Asia/Kuala_Lumpur",
-  }).format(new Date(`${date}T00:00:00Z`))).join(", ");
-  const context = `${alert.peakLevelLabel} haze is forecast in ${business.city} on ${dates}. Last time bad weather hit, your sales dropped ${business.brandKit.lastBadWeatherDipPct}%.`;
-  const option = (kind: string, title: string, description: string, rationale: string, optionOffer = offer): CampaignOption => ({
+  const cap = business.brandKit.monthlyAdBudgetCapRM;
+  const baseBudget = suggestedBudget(cap, peakLevel, alert.affectedDates.length);
+  const option = (kind: string, title: string, description: string, rationale: string, optionOffer = offer, multiplier = 1): CampaignOption => ({
     id: `${alert.id}:${kind}`, signalId: "haze", kind, title, description,
-    reason: `${context} ${rationale}`, offer: optionOffer, suggestedBudgetRM: budget,
+    reason: rationale, offer: optionOffer,
+    suggestedBudgetRM: Math.min(cap, Math.max(20, Math.round((baseBudget * multiplier) / 10) * 10)),
   });
   const options: CampaignOption[] = [];
   if (business.brandKit.delivery) {
@@ -47,9 +45,10 @@ export function campaignOptions(
   const familyOffer = business.type === "cafe"
     ? `Family pack: 2 × ${product.name} (${money(product.priceRM * 2)} → ${money(product.priceRM * 2 - discount)})`
     : offer;
-  options.push(option("stay_home_bundle", bundle[0], bundle[1], bundle[2], familyOffer));
+  options.push(option("stay_home_bundle", bundle[0], bundle[1], bundle[2], familyOffer, 0.8));
   options.push(option("clean_air_walk_in", "A warm welcome indoors",
     "Let nearby customers know you are open, with a small in-store offer.",
-    "A modest in-store offer gives customers already nearby a reason to stop in, without making air-quality or health claims."));
+    "A modest in-store offer gives customers already nearby a reason to stop in, without making air-quality or health claims.",
+    offer, 0.6));
   return options;
 }

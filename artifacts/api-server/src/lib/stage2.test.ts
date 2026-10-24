@@ -23,8 +23,11 @@ test("simulated haze creates one alert and deterministic options, without duplic
   const options = campaignOptions(business, alert, forecast);
   assert.equal(options.length, 3);
   assert.equal(options[0]!.suggestedBudgetRM, 300);
+  assert.equal(options[1]!.suggestedBudgetRM, 240);
+  assert.equal(options[2]!.suggestedBudgetRM, 180);
   assert.match(options[0]!.offer, /Nasi Lemak Ayam.*RM8.*RM6/);
-  assert.match(options[0]!.reason, /22%/);
+  assert.equal(options[0]!.reason, "You deliver, so a delivery push can keep orders coming while walk-ins fall.");
+  assert.ok(!options[0]!.reason.includes("22%"));
   assert.deepEqual(options, campaignOptions(business, alert, forecast));
 });
 
@@ -35,7 +38,8 @@ test("non-delivery businesses get two options and calm forecasts get no alert", 
   const options = campaignOptions(business, alert, forecast);
   assert.equal(options.length, 2);
   assert.ok(options.every(option => option.kind !== "delivery_push"));
-  assert.equal(options[0]!.suggestedBudgetRM, 150);
+  assert.equal(options[0]!.suggestedBudgetRM, 120);
+  assert.equal(options[1]!.suggestedBudgetRM, 90);
   const calm = { ...forecast, days: forecast.days.map(day => ({ ...day, level: 0 as const })) };
   assert.equal(evaluate(calm, business, users[0]!), null);
 });

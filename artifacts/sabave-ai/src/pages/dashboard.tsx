@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ArrowUpRight, CloudFog, Leaf, RefreshCw, ShieldCheck, Sparkles, SunDim } from 'lucide-react';
-import { getListActivityLogQueryKey, getListBusinessesQueryKey, getListDraftsQueryKey, useGenerateDraft, useGetAIStatus, useListBusinesses, useTriggerSignal } from '@workspace/api-client-react';
+import { ArrowUpRight, Check, CloudFog, Leaf, RefreshCw, ShieldCheck, Sparkles, SunDim } from 'lucide-react';
+import { getListActivityLogQueryKey, getListBusinessesQueryKey, getListDraftsQueryKey, useGenerateDraft, useGetAIStatus, useListBusinesses, useListDrafts, useTriggerSignal } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Business, SignalDay, SignalForecast, TriggerResult } from '@workspace/api-client-react';
 import { AlertCard } from '@/components/AlertCard';
@@ -12,6 +12,8 @@ import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
 type ForecastAction = 'check' | 'simulate';
 
 const severityColors = ['#4e9b74', '#d1a447', '#df8054', '#ba5149'];
+const severityTints = ['#eef6ef', '#fff7e3', '#fff0e8', '#fbeceb'];
+const severityLabels = ['Good', 'Moderate', 'Unhealthy', 'Very Unhealthy'];
 
 function formatDate(date: string) {
   const value = new Date(date.length === 10 ? `${date}T12:00:00` : date);
@@ -32,7 +34,7 @@ function ForecastDay({ day, index }: { day: SignalDay; index: number }) {
   const date = formatDate(day.date);
   const level = Math.max(0, Math.min(3, day.level));
   return (
-    <article className="day-card" data-testid={`forecast-day-${index}`}>
+    <article className="day-card" style={{ '--day-tint': severityTints[level] } as CSSProperties} data-testid={`forecast-day-${index}`}>
       <div className="day-name" data-testid={`forecast-weekday-${index}`}>{date.day}</div>
       <div className="day-date" data-testid={`forecast-date-${index}`}>{date.date}</div>
       <div className="haze-visual" aria-hidden="true">
@@ -87,6 +89,14 @@ export default function Dashboard() {
     [businesses, selectedId],
   );
   const businessId = selectedBusiness?.id || '';
+  const journeyDraftsQuery = useListDrafts(
+    { businessId },
+    {
+      query: { queryKey: getListDraftsQueryKey({ businessId }), enabled: !!businessId, refetchInterval: 5000, staleTime: 0 },
+      request: { headers: { 'x-user-id': userId } },
+    },
+  );
+  const businessDrafts = journeyDraftsQuery.data || [];
   const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': userId } } });
   const generate = useGenerateDraft({ request: { headers: { 'x-user-id': userId } } });
   const aiStatus = useGetAIStatus();
@@ -104,18 +114,26 @@ export default function Dashboard() {
       void queryClient.invalidateQueries({ queryKey: getListActivityLogQueryKey() });
       if (currentBusiness.current !== businessId) return;
       setDraftId(draft.id);
-      requestAnimationFrame(() => document.getElementById('studio-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      requestAnimationFrame(() => document.getElementById('draft-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     } catch (e) { if (currentBusiness.current === businessId) setPrepareError(apiErrorInfo(e).message); } finally { setPreparing(''); }
   };
   const mutateRef = useRef(trigger.mutateAsync);
   mutateRef.current = trigger.mutateAsync;
   const requestSeq = useRef(0);
   const currentBusiness = useRef('');
+  const scrollToSignal = useRef(false);
+  const signalResultsRef = useRef<HTMLDivElement>(null);
+
+  const hasPublishedDraft = businessDrafts.some((draft) => draft.status === 'published');
+  const hasPendingDraft = businessDrafts.some((draft) => draft.status === 'pending_approval');
+  const hasAlert = (result?.forecast.businessId === businessId && !!result.alert) || businessDrafts.length > 0;
+  const journeyStep = hasPublishedDraft ? 5 : hasPendingDraft ? 4 : hasAlert ? 3 : 1;
 
   const runForecast = useCallback(async (action: ForecastAction) => {
     const id = currentBusiness.current;
     if (!id) return;
     const seq = ++requestSeq.current;
+    scrollToSignal.current = action === 'simulate';
     setRequestedAction(action);
     setTriggerError(false);
     setResult(null);
@@ -125,11 +143,18 @@ export default function Dashboard() {
       setResult(res);
     } catch {
       if (seq !== requestSeq.current || id !== currentBusiness.current) return;
+      scrollToSignal.current = false;
       setTriggerError(true);
     } finally {
       if (seq === requestSeq.current) setRequestedAction(null);
     }
   }, []);
+
+  useEffect(() => {
+    if (!result || !scrollToSignal.current) return;
+    scrollToSignal.current = false;
+    requestAnimationFrame(() => signalResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }, [result]);
 
   useEffect(() => {
     currentBusiness.current = businessId;
@@ -153,12 +178,27 @@ export default function Dashboard() {
   return (
     <div className="app-shell">
       <AppHeader businesses={businesses} isLoading={isLoadingBusinesses} />
+      <div className="journey-wrap">
+        <ol className="journey-progress" aria-label="Campaign journey" data-testid="journey-progress">
+          {['Forecast', 'Alert', 'Options', 'Approval', 'Published'].map((label, index) => {
+            const step = index + 1;
+            const completed = step < journeyStep;
+            const current = step === journeyStep;
+            return (
+              <li key={label} className={`journey-step ${completed ? 'complete' : ''} ${current ? 'current' : ''}`} aria-current={current ? 'step' : undefined} data-testid={`journey-step-${step}`}>
+                <span className="journey-marker">{completed ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : step}</span>
+                <span className="journey-label">{label}</span>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
 
       <main className="content-wrap">
         <section className="page-heading" aria-labelledby="dashboard-heading">
           <div>
             <div className="eyebrow">Weather watch / Malaysia</div>
-            <h1 id="dashboard-heading">Good to see you.</h1>
+            <h1 id="dashboard-heading">Weather ahead for {selectedBusiness?.name || 'your business'}</h1>
             <p className="heading-sub">A clear view of the weather ahead for your business.</p>
           </div>
           <div className="business-heading" data-testid="selected-business">
@@ -248,7 +288,7 @@ export default function Dashboard() {
                 <div className="legend-row">
                   <span className="legend-label">Haze severity</span>
                   <div className="legend-items" data-testid="severity-legend">
-                    {['Low', 'Elevated', 'High', 'Very high'].map((label, index) => (
+                    {severityLabels.map((label, index) => (
                       <span className="legend-item" key={label}><i className="legend-swatch" style={{ background: severityColors[index] }} />{index} · {label}</span>
                     ))}
                   </div>
@@ -259,7 +299,7 @@ export default function Dashboard() {
         )}
 
         {!noBusiness && forecast && result && !isFetching && (
-          <div className="signal-stack" data-testid="signal-results">
+          <div className="signal-stack" ref={signalResultsRef} data-testid="signal-results">
             {result.alert ? (
               <AlertCard alert={result.alert} city={selectedBusiness?.city || 'Malaysia'} salesDipPct={selectedBusiness?.brandKit?.lastBadWeatherDipPct} />
             ) : (
@@ -303,7 +343,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {!noBusiness && <CampaignStudio key={businessId} business={selectedBusiness} selectedId={draftId} onSelect={setDraftId} />}
+        {!noBusiness && businessDrafts.length > 0 && <CampaignStudio key={businessId} business={selectedBusiness} selectedId={draftId} onSelect={setDraftId} />}
 
         <div className="below-grid">
           <section className="info-card" data-testid="role-awareness-card">

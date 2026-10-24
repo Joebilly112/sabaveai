@@ -22,7 +22,7 @@ export function AppHeader({ businesses, isLoading }: { businesses: Business[]; i
         <div className="brand-mark" aria-hidden="true">s</div>
         <div>
           <div className="brand-name">sabave.ai</div>
-          <div className="brand-caption">A weather signal by Orbyte</div>
+          <div className="brand-caption">An Orbyte module</div>
         </div>
       </div>
       <div className="topbar-right">
@@ -34,7 +34,7 @@ export function AppHeader({ businesses, isLoading }: { businesses: Business[]; i
         <div className="identity-controls">
           <label className="sr-only" htmlFor="business-select">Select business</label>
           <select
-            id="business-select" className="top-select" value={businessId}
+            id="business-select" className="top-select business-select" value={businessId}
             onChange={(e) => { if (confirmLeave()) setBusinessId(e.target.value); }}
             disabled={isLoading || businesses.length === 0} data-testid="select-business"
           >
