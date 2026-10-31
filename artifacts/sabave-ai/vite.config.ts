@@ -27,6 +27,13 @@ if (!basePath) {
   );
 }
 
+// Git Bash rewrites BASE_PATH=/ to its install folder, which builds a site that cannot find its own files.
+if (!basePath.startsWith('/')) {
+  throw new Error(
+    `BASE_PATH must start with "/", but got "${basePath}". In Git Bash, build with MSYS_NO_PATHCONV=1 or use PowerShell.`,
+  );
+}
+
 export default defineConfig({
   base: basePath,
   plugins: [
