@@ -129,7 +129,7 @@ export function PosterPreview({
                 </span>
               ) : null}
               {parts.now != null ? (
-                <strong className={`poster-now ${priceDigits(parts.now).length > 3 ? 'is-long' : ''}`}><small>RM</small>{priceDigits(parts.now)}</strong>
+                <strong className={`poster-now ${priceDigits(parts.now).length > 3 ? 'is-long' : priceDigits(parts.now).length > 1 ? 'is-mid' : ''}`}><small>RM</small>{priceDigits(parts.now)}</strong>
               ) : <strong className="poster-now is-flat">{parts.flat}</strong>}
             </div>
           ) : null}
@@ -151,7 +151,7 @@ export function PosterPreview({
       ) : (
         <div className="poster-checks is-clear" role="status" data-testid="poster-checks"><strong><CheckCircle2 size={13} aria-hidden="true" />Hero, price and action all read clearly</strong></div>
       )}
-      <ShortVideoTeaser headline={line} />
+      <ShortVideoTeaser />
     </div>
   );
 }
