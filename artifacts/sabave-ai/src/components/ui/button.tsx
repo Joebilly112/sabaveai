@@ -25,6 +25,12 @@ const buttonVariants = cva(
         // @replit no hover, transparent border
         ghost: 'border border-transparent',
         link: 'text-primary underline-offset-4 hover:underline',
+        brand:
+          'rounded-xl border border-transparent bg-ds-button font-semibold text-ds-on-primary no-underline shadow-none duration-200 hover:bg-ds-button-hover focus-visible:ring-2 focus-visible:ring-ds-primary focus-visible:ring-offset-2 focus-visible:ring-offset-ds-bg',
+        quiet:
+          'rounded-xl border border-ds-line bg-transparent font-semibold text-ds-ink no-underline shadow-none duration-200 hover:bg-ds-ink/5 focus-visible:ring-2 focus-visible:ring-ds-primary focus-visible:ring-offset-2 focus-visible:ring-offset-ds-bg',
+        danger:
+          'rounded-xl border border-transparent bg-ds-danger font-semibold text-[#0B1412] no-underline shadow-none duration-200 hover:bg-[#E86A55] focus-visible:ring-2 focus-visible:ring-ds-danger focus-visible:ring-offset-2 focus-visible:ring-offset-ds-bg',
       },
       size: {
         // @replit changed sizes
@@ -32,6 +38,7 @@ const buttonVariants = cva(
         sm: 'min-h-8 rounded-md px-3 text-xs',
         lg: 'min-h-10 rounded-md px-8',
         icon: 'h-9 w-9',
+        touch: 'h-11 min-h-11 rounded-xl px-5 text-[15px]',
       },
     },
     defaultVariants: {

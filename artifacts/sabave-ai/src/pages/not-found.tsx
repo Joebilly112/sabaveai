@@ -1,23 +1,24 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { Link } from 'wouter';
+import { buttonVariants } from '@/components/ui/button';
+import { PublicLayout } from '@/components/marketing/public-layout';
+import { PageHeader } from '@/components/ui/page-header';
+import { useDocumentTitle } from '@/lib/use-document-title';
 
 export default function NotFound() {
+  useDocumentTitle('Page not found · sabave.ai');
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">
-              404 Page Not Found
-            </h1>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <PublicLayout>
+      <section className="mx-auto w-full max-w-[1120px] px-4 py-16 lg:px-8 lg:py-24">
+        <PageHeader
+          eyebrow="404"
+          title="This page is not on the map."
+          description="The link may be out of date, or the page has not been added yet."
+        />
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link href="/" className={buttonVariants({ variant: 'brand', size: 'touch' })}>Back home</Link>
+          <Link href="/app" className={buttonVariants({ variant: 'quiet', size: 'touch' })}>Open workspace</Link>
+        </div>
+      </section>
+    </PublicLayout>
   );
 }

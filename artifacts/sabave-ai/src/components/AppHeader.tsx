@@ -14,7 +14,7 @@ export function AppHeader({ businesses, isLoading }: { businesses: Business[]; i
   const guard = (e: { preventDefault: () => void }) => { if (!confirmLeave()) e.preventDefault(); };
   const isLog = location.startsWith('/log');
   const isKit = location.startsWith('/onboarding');
-  const isDash = !isLog && !isKit;
+  const isDash = location === '/app';
 
   return (
     <header className="topbar">
@@ -27,7 +27,7 @@ export function AppHeader({ businesses, isLoading }: { businesses: Business[]; i
       </div>
       <div className="topbar-right">
         <nav className="nav-links" aria-label="Main navigation">
-          <Link href="/" onClick={guard} className={`nav-item ${isDash ? 'active' : ''}`} aria-current={isDash ? 'page' : undefined} data-testid="nav-dashboard">Dashboard</Link>
+          <Link href="/app" onClick={guard} className={`nav-item ${isDash ? 'active' : ''}`} aria-current={isDash ? 'page' : undefined} data-testid="nav-dashboard">Dashboard</Link>
           <Link href="/onboarding" onClick={guard} className={`nav-item ${isKit ? 'active' : ''}`} aria-current={isKit ? 'page' : undefined} data-testid="nav-brand-kit">Brand Kit</Link>
           <Link href="/log" onClick={guard} className={`nav-item ${isLog ? 'active' : ''}`} aria-current={isLog ? 'page' : undefined} data-testid="nav-activity-log">Activity Log</Link>
         </nav>
