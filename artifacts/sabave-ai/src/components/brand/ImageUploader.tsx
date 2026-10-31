@@ -28,6 +28,7 @@ export function ImageUploader({ id, label, hint, kind, colourCount, value, disab
       <span className="field-label">{label}</span>
       <div
         className={`drop-zone ${kind} ${value ? 'has-image' : ''}`}
+        onClick={() => { if (!disabled && !busy) input.current?.click(); }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => { e.preventDefault(); if (!disabled) void handle(e.dataTransfer.files[0]); }}
       >

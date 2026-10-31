@@ -428,3 +428,8 @@
   .ob-primary { width: 100%; margin-left: 0; }
   .ob-card h1 { font-size: 24px; }
 }
+
+.ob-wizard input[type="file"] { cursor: pointer; font-size: 13px; color: #B9C2BC; }
+.ob-wizard input[type="file"]::file-selector-button { min-height: 38px; margin-right: 12px; padding: 0 14px; border: 1px solid #7E8A84; border-radius: 6px; background: transparent; color: #F2EEE6; font: inherit; font-weight: 600; cursor: pointer; }
+.ob-wizard input[type="file"]::file-selector-button:hover { background: rgba(242, 238, 230, 0.08); }
+.ob-wizard input[type="file"]:focus-visible { outline: 2px solid #F2EEE6; outline-offset: 2px; }

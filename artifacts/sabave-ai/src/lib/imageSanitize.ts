@@ -1,8 +1,9 @@
 import { extractColours } from './colorExtract';
 
-export const MAX_FILE_BYTES = 2 * 1024 * 1024;
-const MAX_EDGE = 4096;
-const MAX_PIXELS = 16_000_000;
+// Originals can be large because every image is shrunk and re-encoded before it is saved.
+export const MAX_FILE_BYTES = 15 * 1024 * 1024;
+const MAX_EDGE = 10_000;
+const MAX_PIXELS = 50_000_000;
 const OUTPUT_EDGE = 1200;
 const ALLOWED = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
 
@@ -34,7 +35,8 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 
 /** Validates type+size, decodes via <img>, re-encodes through canvas to a raster data URL (strips SVG scripts/metadata). In memory only. */
 export async function sanitizeImage(file: File, opts: { kind: 'logo' | 'poster'; colourCount: number }): Promise<SanitizedImage> {
-  if (file.size > MAX_FILE_BYTES) throw new Error(`"${file.name}" is ${(file.size / 1048576).toFixed(1)} MB. Max is 2 MB per file.`);
+  if (file.size > MAX_FILE_BYTES) throw new Error(`"${file.name}" is ${(file.size / 1048576).toFixed(1)} MB. Max is 15 MB per file.`);
+  if (/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name)) throw new Error('iPhone HEIC photos are not supported yet. Save it as a JPEG first, then upload that.');
   if (file.type && !ALLOWED.includes(file.type)) throw new Error('Use a PNG, JPEG, SVG or WebP image.');
   const real = await sniff(file);
   if (!real) throw new Error('That file does not look like a PNG, JPEG, SVG or WebP image.');
@@ -44,7 +46,7 @@ export async function sanitizeImage(file: File, opts: { kind: 'logo' | 'poster';
     let w = img.naturalWidth, h = img.naturalHeight;
     if (real === 'image/svg+xml' && (!w || !h)) { w = 800; h = 800; }
     if (!w || !h) throw new Error('This image has no readable dimensions.');
-    if (w > MAX_EDGE || h > MAX_EDGE || w * h > MAX_PIXELS) throw new Error(`Image is ${w}x${h}px. Keep each side at or under 4096px.`);
+    if (w > MAX_EDGE || h > MAX_EDGE || w * h > MAX_PIXELS) throw new Error(`Image is ${w}x${h}px. Keep each side at or under 10,000px.`);
     const scale = Math.min(1, OUTPUT_EDGE / Math.max(w, h));
     const cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
     const canvas = document.createElement('canvas');

@@ -51,13 +51,14 @@ export function MenuGallery({ values, onChange }: { values: MenuDraft[]; onChang
     <div className="menu-gallery">
       <div
         className="drop-zone"
+        onClick={() => bulk.current?.click()}
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => { event.preventDefault(); void addFiles([...event.dataTransfer.files]); }}
       >
         <div className="drop-empty">
           <ImagePlus size={22} />
-          <span>Drop menu photos here</span>
-          <small>One row per photo. PNG, JPEG, SVG or WebP, max 2 MB. You type the name and price.</small>
+          <span>Drop or choose menu photos</span>
+          <small>One row per photo. PNG, JPEG, SVG or WebP, max 15 MB. You type the name and price.</small>
         </div>
       </div>
       <input ref={bulk} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" multiple className="sr-only" data-testid="input-menu-photos" onChange={(event) => { void addFiles([...(event.target.files ?? [])]); event.target.value = ''; }} />
@@ -65,7 +66,7 @@ export function MenuGallery({ values, onChange }: { values: MenuDraft[]; onChang
       <button type="button" className="action-btn small" onClick={() => onChange([...values, { id: newId(), name: '', price: '', imageDataUrl: '', bestseller: false }])} disabled={values.length >= 15} data-testid="button-add-menu-item">Add item</button>
       {values.map((item, index) => (
         <div className="product-row" key={item.id} data-testid={`row-menu-${index}`}>
-          <MenuThumb item={item} onPhoto={(imageDataUrl) => set(index, { imageDataUrl })} />
+          <MenuThumb item={item} onPhoto={(imageDataUrl) => { setError(''); set(index, { imageDataUrl }); }} onError={setError} />
           <input className="text-input" aria-label={`Item ${index + 1} name`} placeholder="Item name" maxLength={150} value={item.name} onChange={(event) => set(index, { name: event.target.value })} data-testid={`input-menu-name-${index}`} />
           <div className="rm-input"><span>RM</span><input aria-label={`Item ${index + 1} price`} inputMode="decimal" placeholder="0.00" value={item.price} onChange={(event) => set(index, { price: event.target.value })} data-testid={`input-menu-price-${index}`} /></div>
           <label className="check"><input type="checkbox" checked={item.bestseller} onChange={(event) => set(index, { bestseller: event.target.checked })} data-testid={`toggle-menu-bestseller-${index}`} />Bestseller</label>
@@ -79,7 +80,7 @@ export function MenuGallery({ values, onChange }: { values: MenuDraft[]; onChang
   );
 }
 
-function MenuThumb({ item, onPhoto }: { item: MenuDraft; onPhoto: (url: string) => void }) {
+function MenuThumb({ item, onPhoto, onError }: { item: MenuDraft; onPhoto: (url: string) => void; onError: (message: string) => void }) {
   const input = useRef<HTMLInputElement>(null);
   return (
     <div>
@@ -90,7 +91,7 @@ function MenuThumb({ item, onPhoto }: { item: MenuDraft; onPhoto: (url: string) 
         const file = event.target.files?.[0];
         event.target.value = '';
         if (!file) return;
-        void photoUrl(file).then(onPhoto).catch(() => undefined);
+        void photoUrl(file).then(onPhoto).catch((err) => onError(err instanceof Error ? err.message : 'That photo could not be read.'));
       }} />
     </div>
   );

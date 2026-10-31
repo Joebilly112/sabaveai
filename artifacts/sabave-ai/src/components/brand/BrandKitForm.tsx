@@ -61,7 +61,7 @@ export function BrandKitForm({ form, update, businessId, userId, team, epoch, bu
 
       <Section n="02" title="Look" sub="Logo and colours. Images stay in memory and are re-encoded in your browser.">
         <div className="look-grid">
-          <ImageUploader id="logo" label="Logo" hint="PNG, JPEG, SVG or WebP · max 2 MB" kind="logo" colourCount={3} value={form.logoDataUrl || (form.logoPath ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${form.logoPath.replace(/^\//, '')}` : '')}
+          <ImageUploader id="logo" label="Logo" hint="PNG, JPEG, SVG or WebP · max 15 MB" kind="logo" colourCount={3} value={form.logoDataUrl || (form.logoPath ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}/${form.logoPath.replace(/^\//, '')}` : '')}
             onImage={(img) => update({ logoDataUrl: img.dataUrl, ...(img.colours.length ? { brandColours: img.colours.slice(0, 3) } : {}) })}
             onClear={() => update({ logoDataUrl: '', logoPath: undefined })} />
           <div className="field">

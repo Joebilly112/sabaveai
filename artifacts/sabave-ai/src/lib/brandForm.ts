@@ -101,7 +101,7 @@ export function toInput(f: FormState): { input?: BusinessInput; errors: string[]
   if (baselineSet && !(baseline >= 0)) e.push('Baseline weekly sales must be RM 0 or more.');
   if (dipSet && !(dip >= 0 && dip <= 100)) e.push('Bad-weather dip must be 0 – 100%.');
   const imgBytes = f.logoDataUrl.length + f.pastPosterDataUrl.length + f.menuItems.reduce((sum, item) => sum + item.imageDataUrl.length, 0);
-  if (imgBytes >= API_DATA_URL_LIMIT) e.push(`Images total ${(imgBytes / 1048576).toFixed(1)} MB once encoded. Keep each image under 2 MB.`);
+  if (imgBytes >= API_DATA_URL_LIMIT) e.push(`Images total ${(imgBytes / 1048576).toFixed(1)} MB once encoded. Use fewer or smaller images.`);
   if (e.length) return { errors: e };
   const opt = (s: string) => (s.trim() ? s.trim() : undefined);
   return {
