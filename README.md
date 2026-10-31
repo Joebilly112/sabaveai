@@ -21,7 +21,7 @@ A predictive, weather-triggered marketing module for Orbyte. It watches the haze
 |---|---|
 | Live Demo (final) | https://sabave.web.app |
 | GitHub Repository | https://github.com/Joebilly112/sabaveai |
-| Final Pitch Deck | `submission/SDC2026_NabilTheGoat_Deck.pdf` |
+| Final Pitch Deck | `submission/SDC2026_NabilTheGoat_PitchDeck.pptx` |
 | Preliminary Demo Video | https://youtu.be/Fa1BEJwJaj8 |
 | RunPod Endpoint | Not used (no GPU workload) |
 
