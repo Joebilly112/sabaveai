@@ -133,6 +133,14 @@ html:has(.app-dark) ::selection {
   border-left-color: #24342F;
 }
 
+.app-dark .account-chip {
+  align-self: center;
+  color: #F2EEE6;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .app-dark .logout-btn {
   align-self: center;
   flex: 0 0 auto;

@@ -2,6 +2,7 @@ import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import type { Business } from '@workspace/api-client-react';
+import { asArray } from '@/lib/as-array';
 import { shopCities } from '@/lib/shop-cities';
 import { SEVERITY_COLORS, SEVERITY_LABELS, clampLevel } from '@/components/dashboard/format';
 import 'leaflet/dist/leaflet.css';
@@ -110,7 +111,7 @@ export function WeatherMap({
   const tileOk = useRef(false);
   const [tileErrors, setTileErrors] = useState(0);
   const [tilesFailed, setTilesFailed] = useState(false);
-  const pins = businesses.flatMap((business) => {
+  const pins = asArray<Business>(businesses).flatMap((business) => {
     const coords = shopCoords(business);
     return coords ? [{ business, coords }] : [];
   });

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
-import { malaysiaView, shopCities, type ShopCity } from '@/lib/shop-cities';
+import { malaysiaCloseup, malaysiaView, shopCities, type ShopCity } from '@/lib/shop-cities';
 
 const earthUrl = `${import.meta.env.BASE_URL}globe/earth-day.jpg`;
 
@@ -46,7 +46,7 @@ function GlobeFallback() {
   );
 }
 
-export function MalaysiaGlobe() {
+export function MalaysiaGlobe({ closeup = false }: { closeup?: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<GlobeMethods | undefined>(undefined);
   const pickRef = useRef<(id: ShopCity['id'] | null) => void>(() => {});
@@ -136,11 +136,24 @@ export function MalaysiaGlobe() {
     const controls = globe.controls();
     controls.enableZoom = false;
     controls.enablePan = false;
+    const target = closeup ? malaysiaCloseup : malaysiaView;
     if (prefersReducedMotion()) {
-      globe.pointOfView(malaysiaView, 0);
+      globe.pointOfView(target, 0);
       controls.autoRotate = false;
       controls.enableRotate = false;
       setSettled(true);
+      return;
+    }
+    if (closeup) {
+      globe.pointOfView({ lat: 4.2, lng: 102.2, altitude: 1.35 }, 0);
+      controls.autoRotate = false;
+      window.setTimeout(() => {
+        globe.pointOfView(malaysiaCloseup, 1700);
+        window.setTimeout(() => {
+          controls.enableRotate = false;
+          setSettled(true);
+        }, 1800);
+      }, 250);
       return;
     }
     globe.pointOfView({ lat: 18, lng: 55, altitude: 2.5 }, 0);
@@ -154,13 +167,13 @@ export function MalaysiaGlobe() {
         setSettled(true);
       }, 2200);
     }, 1300);
-  }, []);
+  }, [closeup]);
 
   const active = shopCities.find((city) => city.id === activeId) ?? shopCities[0]!;
   const side = Math.floor(Math.min(size.width, size.height));
 
   return (
-    <div ref={wrapRef} className="globe-stage relative grid h-full w-full place-items-center overflow-visible" role="img" aria-label="Globe focused on Peninsular Malaysia. Shah Alam is unhealthy, Petaling Jaya is moderate, and Johor Bahru is good.">
+    <div ref={wrapRef} className={`globe-stage relative grid h-full w-full place-items-center overflow-visible${closeup ? ' globe-stage-closeup' : ''}`} role="img" aria-label="Globe focused on Peninsular Malaysia. Shah Alam is unhealthy, Petaling Jaya is moderate, and Johor Bahru is good.">
       {webgl === false ? <GlobeFallback /> : null}
       {webgl && side > 0 ? (
         <Globe

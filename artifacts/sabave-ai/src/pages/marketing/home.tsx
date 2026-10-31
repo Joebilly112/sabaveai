@@ -13,7 +13,7 @@ const steps = [
 export default function HomePage() {
   useDocumentTitle('sabave.ai');
   return (
-    <PublicLayout showNav={false}>
+    <PublicLayout>
       <LandingHero />
       <section id="how-it-works" className="border-t border-ds-line px-5 py-14 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-[1120px]">

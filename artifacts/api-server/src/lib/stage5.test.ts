@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import { isPublicIP, parsePublicURL, extractWebsiteText } from "./websiteReader";
 import { analyzePoster, analyzeWebsite } from "./brandAnalyzer";
 import { parseBusiness, validateImage } from "./brandValidation";
-import { getStore } from "./store";
+import { ensureSeededStore, getStore } from "./store";
 import type { generateJSON } from "./llm";
 import { hazeSignal } from "../signals/hazeSignal";
+
+ensureSeededStore();
 
 test("seed data and offline forecasts do not depend on process cwd", async () => {
   assert.equal(getStore().businesses.length, 3);

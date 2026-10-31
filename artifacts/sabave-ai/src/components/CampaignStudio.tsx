@@ -5,6 +5,7 @@ import {
   getListActivityLogQueryKey, getListDraftsQueryKey, useDecideDraft, useGetAIStatus, useListDrafts, useRegenerateDraft, useUpdateDraft,
 } from '@workspace/api-client-react';
 import type { Business, CampaignDraft, DraftUpdateChannelsItem } from '@workspace/api-client-react';
+import { asArray } from '@/lib/as-array';
 import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
 import { PosterPreview } from '@/components/PosterPreview';
 
@@ -16,8 +17,8 @@ type Form = { headline: string; caption_bm: string; caption_en: string; hashtags
 function toForm(d: CampaignDraft): Form {
   return {
     headline: d.copy.headline, caption_bm: d.copy.caption_bm, caption_en: d.copy.caption_en,
-    hashtags: d.copy.hashtags.join(' '), cta: d.copy.cta, offer: d.option.offer,
-    budget: String(d.budgetRM), channels: [...d.channels],
+    hashtags: asArray<string>(d.copy?.hashtags).join(' '), cta: d.copy.cta, offer: d.option.offer,
+    budget: String(d.budgetRM), channels: [...asArray<DraftUpdateChannelsItem>(d.channels)],
   };
 }
 const same = (a: Form | null, b: Form | null) => JSON.stringify(a) === JSON.stringify(b);
@@ -38,8 +39,8 @@ function Warn({ hits }: { hits: string[] }) {
   return <div className="never-warn" role="alert"><AlertTriangle size={12} /> Avoid: {hits.map((h) => `"${h}"`).join(', ')}</div>;
 }
 
-export function CampaignStudio({ business, selectedId, onSelect }: { business?: Business; selectedId: string; onSelect: (id: string) => void }) {
-  const { userId, role, setRole, setDirty } = useWorkspace();
+export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }: { business?: Business; selectedId: string; onSelect: (id: string) => void; weatherLabel?: string }) {
+  const { userId, role, setDirty } = useWorkspace();
   const businessId = business?.id || '';
   const qc = useQueryClient();
   const headers = { headers: { 'x-user-id': userId } };
@@ -49,7 +50,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
   const regen = useRegenerateDraft({ request: headers });
   const aiStatus = useGetAIStatus();
   const aiConfigured = !!aiStatus.data?.configured;
-  const list = useMemo(() => [...(drafts.data || [])], [drafts.data]);
+  const list = useMemo(() => asArray<CampaignDraft>(drafts.data), [drafts.data]);
   const draft = list.find((d) => d.id === selectedId);
 
   const [form, setForm] = useState<Form | null>(null);
@@ -87,11 +88,16 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
     }
   }, [draft, selectedId]);
 
-  const neverSay = useMemo(() => [...BASE_NEVER, ...(business?.brandKit?.neverSay || [])], [business]);
+  const neverSay = useMemo(() => [...BASE_NEVER, ...asArray<string>(business?.brandKit?.neverSay)], [business]);
+  const itemPhotos = useMemo(() => asArray(business?.brandKit?.menuItems).filter((item) => item.imageDataUrl), [business]);
+  const [itemPhotoId, setItemPhotoId] = useState('');
+  useEffect(() => {
+    setItemPhotoId((current) => (current && itemPhotos.some((item) => item.id === current) ? current : (itemPhotos.find((item) => item.bestseller) ?? itemPhotos[0])?.id ?? ''));
+  }, [itemPhotos]);
   const editable = draft && (draft.status === 'draft' || draft.status === 'rejected');
 
   const refresh = (d: CampaignDraft) => {
-    qc.setQueryData<CampaignDraft[]>(getListDraftsQueryKey({ businessId }), (old) => (old ? old.map((x) => (x.id === d.id ? d : x)) : old));
+    qc.setQueryData<CampaignDraft[]>(getListDraftsQueryKey({ businessId }), (old) => (Array.isArray(old) ? old.map((x) => (x.id === d.id ? d : x)) : old));
     void qc.invalidateQueries({ queryKey: getListDraftsQueryKey({ businessId }) });
     void qc.invalidateQueries({ queryKey: getListActivityLogQueryKey() });
     const f = toForm(d);
@@ -140,7 +146,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
     setBusy('regen'); setError(null); setNotice('');
     try {
       const d = await regen.mutateAsync({ data: { draftId: id } });
-      if (loadedId.current !== id) { qc.setQueryData<CampaignDraft[]>(getListDraftsQueryKey({ businessId }), (old) => (old ? old.map((x) => (x.id === d.id ? d : x)) : old)); return; }
+      if (loadedId.current !== id) { qc.setQueryData<CampaignDraft[]>(getListDraftsQueryKey({ businessId }), (old) => (Array.isArray(old) ? old.map((x) => (x.id === d.id ? d : x)) : old)); return; }
       refresh(d);
       setNotice(d.copy.source === 'ai' ? 'Copy rewritten with AI. Offer, budget and channels were kept.' : 'AI was unavailable, so template copy was used. Offer, budget and channels were kept.');
     } catch (e) { if (loadedId.current === id) setError(apiErrorInfo(e)); } finally { setBusy(''); }
@@ -203,8 +209,7 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
 
               {draft.status === 'pending_approval' && role !== 'owner' && (
                 <div className="handoff-banner" role="status" data-testid="staff-handoff-banner">
-                  <div><strong>Sent to Mr. Tan (Owner) for approval</strong><span>Switch to the owner view to review the submitted draft.</span></div>
-                  <button className="action-btn" onClick={() => setRole('owner')} data-testid="button-switch-owner">Switch to Owner view</button>
+                  <div><strong>Sent to the owner for approval</strong><span>You can prepare and submit. Only the owner can approve or reject.</span></div>
                 </div>
               )}
 
@@ -241,6 +246,13 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
 
               <div className="editor-body">
                 <fieldset className="fields" disabled={!editable || !!busy}>
+                  {itemPhotos.length > 0 && (
+                    <label>Item photo
+                      <select value={itemPhotoId} onChange={(e) => setItemPhotoId(e.target.value)} data-testid="select-item-photo">
+                        {itemPhotos.map((item) => <option key={item.id} value={item.id}>{item.name}{item.bestseller ? ' · Bestseller' : ''}</option>)}
+                      </select>
+                    </label>
+                  )}
                   <label>Headline<input value={form.headline} onChange={(e) => set('headline', e.target.value)} maxLength={300} data-testid="input-headline" /></label>
                   <Warn hits={findViolations(form.headline, neverSay)} />
                   <label>Caption · Bahasa Malaysia{business?.brandKit.language !== 'en' && ' · Preferred'}<textarea rows={3} value={form.caption_bm} onChange={(e) => set('caption_bm', e.target.value)} data-testid="input-caption-bm" /></label>
@@ -267,7 +279,16 @@ export function CampaignStudio({ business, selectedId, onSelect }: { business?: 
                   </div>
                   {draft.copy.rationale && <p className="rationale"><span>Rationale</span>{draft.copy.rationale}</p>}
                 </fieldset>
-                <PosterPreview business={business} headline={form.headline} offer={form.offer} cta={form.cta} />
+                <PosterPreview
+                  business={business}
+                  headline={form.headline}
+                  offer={form.offer}
+                  cta={form.cta}
+                  weatherLabel={weatherLabel}
+                  posterArt={(draft.copy as { posterArt?: string }).posterArt}
+                  productImage={itemPhotos.find((item) => form.offer.toLowerCase().includes(item.name.toLowerCase()))?.imageDataUrl
+                    || itemPhotos.find((item) => item.id === itemPhotoId)?.imageDataUrl}
+                />
               </div>
 
               {error && (

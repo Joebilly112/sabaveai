@@ -7,6 +7,7 @@
  */
 import type { BrandKit } from './brandKit';
 import type { BusinessInputType } from './businessInputType';
+import type { TeamMember } from './teamMember';
 
 export interface BusinessInput {
   /**
@@ -16,7 +17,7 @@ export interface BusinessInput {
   name: string;
   type: BusinessInputType;
   /**
-     * @minLength 1
+     * @minLength 0
      * @maxLength 150
      */
   city: string;
@@ -30,5 +31,13 @@ export interface BusinessInput {
      * @maximum 180
      */
   lon: number;
+  onboardingCompleted?: boolean;
+  /**
+     * @minimum 0
+     * @maximum 8
+     */
+  onboardingStep?: number;
+  /** @maxItems 30 */
+  teamMembers?: TeamMember[];
   brandKit: BrandKit;
 }

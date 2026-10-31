@@ -2,11 +2,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { aiCopySchema, generateCopy, templateCopy } from "./copyGenerator";
 import { generateJSON, AIError, isAIConfigured } from "./llm";
-import { getStore } from "./store";
+import { ensureSeededStore, getStore } from "./store";
 import { users } from "./users";
 import { hazeSignal } from "../signals/hazeSignal";
 import { evaluate } from "./triggerEngine";
 import { campaignOptions } from "./campaignRules";
+import { fallbackPosterSvg, sanitizePosterSvg } from "./posterArt";
+
+ensureSeededStore();
 
 const business = getStore().businesses[0]!;
 const user = users[0]!;
@@ -81,4 +84,15 @@ test("transport selects newest Pro, caches discovery, ignores reasoning, retries
     globalThis.fetch = async () => { throw new DOMException("timeout", "TimeoutError"); };
     await assert.rejects(generateJSON(input, value => aiCopySchema.parse(value)), /unavailable or timed out/);
   } finally { globalThis.fetch = original; }
+});
+
+test("poster vectors stay plain shapes and follow the product", () => {
+  assert.equal(sanitizePosterSvg('<svg viewBox="0 0 160 96"><script></script></svg>'), null);
+  assert.equal(sanitizePosterSvg('<svg viewBox="0 0 160 96"><image href="https://evil.test/a.png"/></svg>'), null);
+  const ok = sanitizePosterSvg('<svg viewBox="0 0 160 96"><circle cx="40" cy="36" r="14" fill="#F08A3C"/></svg>');
+  assert.match(ok || "", /circle/);
+  const art = fallbackPosterSvg(business, option, alert);
+  assert.equal(sanitizePosterSvg(art), art);
+  assert.match(templateCopy(business, option, alert).headline, /hazy days|delivered/);
+  assert.match(templateCopy(business, option, alert).posterArt || "", /<svg/);
 });

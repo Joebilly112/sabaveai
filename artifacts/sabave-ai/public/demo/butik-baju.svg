@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <rect width="160" height="160" rx="28" fill="#BE185D"/>
+  <path d="M50 48h60l10 18-16 8v40H56V74l-16-8z" fill="#FCE7F3"/>
+  <text x="80" y="132" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#FCE7F3">Baju</text>
+</svg>

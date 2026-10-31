@@ -1,6 +1,8 @@
 [
   {
     "id": "b1",
+    "onboardingCompleted": true,
+    "onboardingStep": 8,
     "name": "Kopitiam Selera Pagi",
     "type": "cafe",
     "city": "Shah Alam",
@@ -39,6 +41,8 @@
   },
   {
     "id": "b2",
+    "onboardingCompleted": true,
+    "onboardingStep": 8,
     "name": "Dobi Ceria Express",
     "type": "laundromat",
     "city": "Petaling Jaya",
@@ -78,6 +82,8 @@
   },
   {
     "id": "b3",
+    "onboardingCompleted": true,
+    "onboardingStep": 8,
     "name": "Butik Anggun",
     "type": "retail",
     "city": "Johor Bahru",

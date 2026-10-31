@@ -1,4 +1,4 @@
-import { useState, type ComponentProps } from 'react';
+import { useState, type ComponentProps, type ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,16 +10,20 @@ type PasswordInputProps = Omit<ComponentProps<typeof Input>, 'type'> & {
   label: string;
   hint?: string;
   error?: string;
+  labelAction?: ReactNode;
 };
 
-export function PasswordInput({ id, label, hint, error, className, ...props }: PasswordInputProps) {
+export function PasswordInput({ id, label, hint, error, labelAction, className, ...props }: PasswordInputProps) {
   const [visible, setVisible] = useState(false);
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
   return (
-    <div className="grid gap-2">
-      <Label htmlFor={id} className="text-sm font-medium text-ds-ink">{label}</Label>
+    <div className="grid gap-1.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <Label htmlFor={id} className="text-sm font-medium text-ds-ink">{label}</Label>
+        {labelAction}
+      </div>
       <div className="relative">
         <Input
           id={id}
@@ -31,7 +35,7 @@ export function PasswordInput({ id, label, hint, error, className, ...props }: P
         />
         <button
           type="button"
-          className="absolute top-0 right-0 inline-flex size-11 items-center justify-center rounded-xl text-ds-muted hover:text-ds-ink"
+          className="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center rounded-xl text-ds-muted hover:text-ds-ink"
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
           onClick={() => setVisible((current) => !current)}

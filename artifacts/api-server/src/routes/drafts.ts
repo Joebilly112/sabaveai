@@ -3,6 +3,7 @@ import { Router, type IRouter } from "express";
 import { GenerateDraftBody, UpdateDraftBody, DecideDraftBody, RegenerateDraftBody } from "@workspace/api-zod";
 import { findBusiness, getStore } from "../lib/store";
 import { getUserById } from "../lib/users";
+import { canAccessBusiness } from "../lib/access";
 import { campaignOptions } from "../lib/campaignRules";
 import { templateCopy, generateCopy } from "../lib/copyGenerator";
 import { getActiveModel, isAIConfigured } from "../lib/llm";
@@ -21,33 +22,40 @@ router.use(["/generate", "/drafts", "/approve", "/log"], (req, res, next) => {
 });
 
 router.get("/drafts", (req, res) => {
-  if (typeof req.query.businessId !== "string" || !findBusiness(req.query.businessId)) {
+  const user = getUserById(req.header("x-user-id") ?? "");
+  const business = typeof req.query.businessId === "string" ? findBusiness(req.query.businessId) : undefined;
+  if (!user || !business || !canAccessBusiness(business, user)) {
     res.status(404).json({ error: "Business not found." });
     return;
   }
   res.json(getStore().drafts.filter(draft => draft.businessId === req.query.businessId).slice().reverse());
 });
 router.get("/log", (req, res) => {
+  const user = getUserById(req.header("x-user-id") ?? "");
+  if (!user) { res.status(401).json({ error: "Unknown simulated user." }); return; }
   if (req.query.businessId !== undefined && typeof req.query.businessId !== "string") {
     res.status(400).json({ error: "Invalid business filter." });
     return;
   }
-  res.json(listLogs(req.query.businessId as string | undefined));
+  const visible = new Set(getStore().businesses.filter((business) => canAccessBusiness(business, user)).map((business) => business.id));
+  const businessId = req.query.businessId as string | undefined;
+  if (businessId && !visible.has(businessId)) { res.status(404).json({ error: "Business not found." }); return; }
+  res.json(listLogs(businessId).filter((entry) => visible.has(entry.businessId)));
 });
 router.post("/generate", async (req, res) => {
   const parsed = GenerateDraftBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Business, alert and option IDs are required." }); return; }
   const { businessId, alertId, optionId } = parsed.data;
+  const user = getUserById(req.header("x-user-id") ?? "");
   const business = findBusiness(businessId);
   const alert = getStore().alerts.find(item => item.id === alertId && item.businessId === businessId && item.open);
-  if (!business || !alert) { res.status(404).json({ error: "Business or open alert not found." }); return; }
+  if (!user || !business || !canAccessBusiness(business, user) || !alert) { res.status(404).json({ error: "Business or open alert not found." }); return; }
   const forecast = getStore().forecasts.get(`${businessId}:${alert.signalId}`);
   if (!forecast || !alert.affectedDates.every(date => forecast.days.some(day => day.date.slice(0, 10) === date && day.level >= 2))) {
     res.status(409).json({ error: "The forecast has changed. Check it again before preparing a campaign." }); return;
   }
   const option = campaignOptions(business, alert, forecast).find(item => item.id === optionId);
   if (!option) { res.status(404).json({ error: "Option does not belong to this alert." }); return; }
-  const user = getUserById(req.header("x-user-id") ?? "u1")!;
   const copy = parsed.data.useAI !== false
     ? await generateCopy(business, alert, option, user) : templateCopy(business, option);
   const draft: CampaignDraft = {
@@ -68,9 +76,10 @@ router.post("/drafts/regenerate", async (req, res, next) => {
     const draft = getStore().drafts.find(item => item.id === parsed.data.draftId);
     if (!draft) throw new CampaignError(404, "Draft not found.");
     if (!["draft", "rejected"].includes(draft.status)) throw new CampaignError(409, "Only editable drafts can be regenerated.");
-    const business = findBusiness(draft.businessId)!;
+    const business = findBusiness(draft.businessId);
+    const user = getUserById(req.header("x-user-id") ?? "");
+    if (!user || !business || !canAccessBusiness(business, user)) throw new CampaignError(404, "Draft not found.");
     const alert = getStore().alerts.find(item => item.id === draft.alertId)!;
-    const user = getUserById(req.header("x-user-id") ?? "u1")!;
     // Optimistic check: never overwrite another edit/submission during the slow AI call.
     const revision = JSON.stringify(draft);
     const copy = await generateCopy(business, alert, structuredClone(draft.option), user);
@@ -82,16 +91,34 @@ router.post("/drafts/regenerate", async (req, res, next) => {
     res.json(draft);
   } catch (error) { next(error); }
 });
+function draftBusiness(draftId: string) {
+  const draft = getStore().drafts.find((item) => item.id === draftId);
+  const business = draft ? findBusiness(draft.businessId) : undefined;
+  return { draft, business };
+}
+
 router.patch("/drafts", (req, res, next) => {
   const parsed = UpdateDraftBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid draft fields." }); return; }
-  try { res.json(updateDraft(parsed.data, getUserById(req.header("x-user-id") ?? "u1")!)); }
+  const user = getUserById(req.header("x-user-id") ?? "");
+  const { draft, business } = draftBusiness(parsed.data.draftId);
+  if (!user || !draft || !business || !canAccessBusiness(business, user)) {
+    res.status(404).json({ error: "Draft not found." });
+    return;
+  }
+  try { res.json(updateDraft(parsed.data, user)); }
   catch (error) { next(error); }
 });
 router.post("/approve", async (req, res, next) => {
   const parsed = DecideDraftBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid approval decision." }); return; }
-  try { res.json(await decideDraft(parsed.data, getUserById(req.header("x-user-id") ?? "u1")!)); }
+  const user = getUserById(req.header("x-user-id") ?? "");
+  const { draft, business } = draftBusiness(parsed.data.draftId);
+  if (!user || !draft || !business || !canAccessBusiness(business, user)) {
+    res.status(404).json({ error: "Draft not found." });
+    return;
+  }
+  try { res.json(await decideDraft(parsed.data, user)); }
   catch (error) { next(error); }
 });
 router.use(((error, _req, res, next) => {

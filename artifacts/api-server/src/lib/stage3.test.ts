@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getStore } from "./store";
+import { ensureSeededStore, getStore } from "./store";
 import { hazeSignal } from "../signals/hazeSignal";
 import { evaluate } from "./triggerEngine";
 import { campaignOptions } from "./campaignRules";
@@ -9,6 +9,8 @@ import { findViolations } from "./neverSay";
 import { updateDraft, decideDraft, CampaignError } from "./approvalService";
 import { users } from "./users";
 import type { CampaignDraft } from "./types";
+
+ensureSeededStore();
 
 const staff = users[0]!;
 const owner = users[1]!;

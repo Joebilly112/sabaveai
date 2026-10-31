@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { authenticate, readSession, registerLocalAccount, writeSession, type Session } from '@/lib/local-auth';
 
 export type Role = 'staff' | 'owner';
 
@@ -14,7 +15,11 @@ type Ctx = {
   setBusinessId: (id: string) => void;
   role: Role;
   setRole: (r: Role) => void;
-  userId: 'u1' | 'u2';
+  userId: string;
+  session: Session | null;
+  signIn: (username: string, password: string) => boolean;
+  signUp: (input: { name: string; businessName: string; email: string; password: string }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  signOut: () => void;
   dirty: boolean;
   setDirty: (d: boolean) => void;
   confirmLeave: () => boolean;
@@ -23,14 +28,57 @@ type Ctx = {
 const WorkspaceContext = createContext<Ctx | null>(null);
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [businessId, setBusinessId] = useState(() => read('sabave.business'));
-  const [role, setRole] = useState<Role>(() => (read('sabave.role') === 'owner' ? 'owner' : 'staff'));
+  const [session, setSession] = useState<Session | null>(() => readSession());
+  const [businessId, setBusinessId] = useState(() => read('sabave.business') || readSession()?.businessId || '');
+  const [role, setRoleState] = useState<Role>(() => readSession()?.role ?? 'staff');
   const [dirty, setDirty] = useState(false);
   const dirtyRef = useRef(false);
   dirtyRef.current = dirty;
 
+  const setBusiness = (id: string) => {
+    setBusinessId(id);
+    setSession((current) => {
+      if (!current || (current.businessId || '') === id) return current;
+      return { ...current, businessId: id || undefined };
+    });
+  };
+
+  const setRole = (next: Role) => {
+    setRoleState(session?.role ?? next);
+  };
+
+  const signIn = (username: string, password: string) => {
+    const next = authenticate(username, password);
+    if (!next) return false;
+    setSession(next);
+    setRoleState(next.role);
+    setBusinessId(next.businessId || '');
+    return true;
+  };
+
+  const signUp = async (input: { name: string; businessName: string; email: string; password: string }) => {
+    const result = await registerLocalAccount(input);
+    if (!result.ok) return result;
+    setSession(result.session);
+    setRoleState('owner');
+    if (result.session.businessId) {
+      write('sabave.business', result.session.businessId);
+      setBusinessId(result.session.businessId);
+    }
+    return { ok: true as const };
+  };
+
+  const signOut = () => {
+    setSession(null);
+    setBusinessId('');
+    writeSession(null);
+  };
+
   useEffect(() => { write('sabave.business', businessId); }, [businessId]);
-  useEffect(() => { write('sabave.role', role); }, [role]);
+  useEffect(() => {
+    writeSession(session);
+    if (session) write('sabave.role', session.role);
+  }, [session]);
   useEffect(() => {
     if (!dirty) return;
     const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
@@ -39,15 +87,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [dirty]);
 
   const value = useMemo<Ctx>(() => ({
-    businessId, setBusinessId, role, setRole, dirty, setDirty,
-    userId: role === 'owner' ? 'u2' : 'u1',
+    businessId, setBusinessId: setBusiness, role, setRole, dirty, setDirty, session, signIn, signUp, signOut,
+    userId: session?.userId ?? '',
     confirmLeave: () => {
       if (!dirtyRef.current) return true;
       const ok = window.confirm('You have unsaved edits. Leave and discard them?');
       if (ok) setDirty(false);
       return ok;
     },
-  }), [businessId, role, dirty]);
+  }), [businessId, role, dirty, session]);
 
   return <WorkspaceContext.Provider value={value}>{children}</WorkspaceContext.Provider>;
 }

@@ -1,28 +1,27 @@
 import { Link } from 'wouter';
-import { footerColumns } from '@/lib/public-nav';
+import { SabaveLogo } from '@/components/SabaveLogo';
+import { footerLinks } from '@/lib/public-nav';
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-ds-line bg-ds-surface">
-      <div className="mx-auto grid max-w-[1120px] gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
-        {footerColumns.map((column) => (
-          <nav key={column.title} aria-label={column.title}>
-            <h2 className="font-display text-sm font-semibold tracking-wide text-ds-ink">{column.title}</h2>
-            <ul className="mt-3">
-              {column.links.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="inline-flex min-h-11 items-center rounded-lg text-sm text-ds-muted hover:text-ds-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-primary">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+    <footer className="mt-auto bg-[#070E0C]">
+      <div className="mx-auto flex max-w-[1120px] flex-col gap-3 px-4 py-8 sm:px-8 lg:px-12">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <SabaveLogo height={28} />
+          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="rounded-sm py-1 text-sm text-[#B9C2BC] hover:text-[#F2EEE6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9DCFB4]"
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
-        ))}
-      </div>
-      <div className="border-t border-ds-line">
-        <p className="mx-auto max-w-[1120px] px-4 py-6 text-sm leading-relaxed text-ds-faint lg:px-8">
-          © 2026 sabave.ai · An Orbyte module · Built for SDC Hackathon 2026 · Synthetic demo data · Publishing to Facebook/Instagram is simulated
+        </div>
+        <p className="text-xs leading-5 text-[#7E8A84]">
+          © 2026 sabave.ai · Synthetic demo · publishing is simulated
         </p>
       </div>
     </footer>

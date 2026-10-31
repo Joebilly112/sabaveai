@@ -6,6 +6,16 @@ export const primaryNav: SiteLink[] = [
   { href: '/pricing', label: 'Pricing' },
 ];
 
+/** Compact marketing footer. Docs index still reads the Docs column below. */
+export const footerLinks: SiteLink[] = [
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/login', label: 'Log in' },
+  { href: '/docs', label: 'Docs' },
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/terms', label: 'Terms' },
+  { href: '/contact', label: 'Contact' },
+];
+
 export const footerColumns: { title: string; links: SiteLink[] }[] = [
   {
     title: 'Product',
@@ -13,7 +23,7 @@ export const footerColumns: { title: string; links: SiteLink[] }[] = [
       { href: '/', label: 'Home' },
       { href: '/solutions', label: 'Solutions' },
       { href: '/pricing', label: 'Pricing' },
-      { href: '/app', label: 'Live demo' },
+      { href: '/login', label: 'Live demo' },
       { href: '/changelog', label: 'Changelog' },
     ],
   },

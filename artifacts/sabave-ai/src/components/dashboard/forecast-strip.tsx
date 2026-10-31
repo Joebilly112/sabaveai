@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { AlertTriangle, CloudSun, Sun, Wind } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { SignalForecast } from '@workspace/api-client-react';
+import { asArray } from '@/lib/as-array';
 import {
   ALERT_THRESHOLD,
   SEVERITY_COLORS,
@@ -56,7 +57,7 @@ export function ForecastStrip({
   peakDate?: string;
 }) {
   const [reduceMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const days = forecast?.days.slice(0, 5) ?? [];
+  const days = asArray(forecast?.days).filter((day) => typeof day?.date === 'string').slice(0, 5);
   const peak = peakDay(days, peakDate);
   const chart = days.map((day) => {
     const date = formatDateParts(day.date);

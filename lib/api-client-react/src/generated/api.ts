@@ -37,6 +37,10 @@ import type {
   PosterAnalysisInput,
   RegenerationInput,
   SignalForecast,
+  SignupInput,
+  SignupResult,
+  TeamMember,
+  TeamMemberInput,
   TriggerInput,
   TriggerResult,
   WebsiteAnalysis,
@@ -1267,6 +1271,247 @@ export function useListBusinesses<TData = Awaited<ReturnType<typeof listBusiness
 
 
 
+
+export const getSignupOwnerUrl = () => {
+
+
+
+
+  return `/api/signup`
+}
+
+/**
+ * @summary Create an owner and an empty business for onboarding
+ */
+export const signupOwner = async (signupInput: SignupInput, options?: Parameters<typeof customFetch>[1]): Promise<SignupResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SignupResult>(getSignupOwnerUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(signupInput)
+  }
+);}
+
+
+
+
+
+export const getSignupOwnerMutationKey = () => ['signupOwner'] as const;
+
+export const getSignupOwnerMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signupOwner>>, TError,SignupOwnerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof signupOwner>>, TError,SignupOwnerMutationVariables, TContext> => {
+
+const mutationKey = getSignupOwnerMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof signupOwner>>, SignupOwnerMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  signupOwner(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SignupOwnerMutationResult = NonNullable<Awaited<ReturnType<typeof signupOwner>>>
+    export type SignupOwnerMutationBody = BodyType<SignupInput>
+    export type SignupOwnerMutationError = ErrorType<unknown>
+    export type SignupOwnerMutationVariables = {data: BodyType<SignupInput>}
+
+    /**
+ * @summary Create an owner and an empty business for onboarding
+ */
+export const useSignupOwner = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof signupOwner>>, TError,SignupOwnerMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof signupOwner>>,
+        TError,
+        SignupOwnerMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSignupOwnerMutationOptions(options));
+    }
+
+export const getAddTeamMemberUrl = (id: string,) => {
+
+
+
+
+  return `/api/businesses/${id}/team`
+}
+
+export const addTeamMember = async (id: string,
+    teamMemberInput: TeamMemberInput, options?: Parameters<typeof customFetch>[1]): Promise<TeamMember[]> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<TeamMember[]>(getAddTeamMemberUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(teamMemberInput)
+  }
+);}
+
+
+
+
+
+export const getAddTeamMemberMutationKey = () => ['addTeamMember'] as const;
+
+export const getAddTeamMemberMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addTeamMember>>, TError,AddTeamMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addTeamMember>>, TError,AddTeamMemberMutationVariables, TContext> => {
+
+const mutationKey = getAddTeamMemberMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addTeamMember>>, AddTeamMemberMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  addTeamMember(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddTeamMemberMutationResult = NonNullable<Awaited<ReturnType<typeof addTeamMember>>>
+    export type AddTeamMemberMutationBody = BodyType<TeamMemberInput>
+    export type AddTeamMemberMutationError = ErrorType<unknown>
+    export type AddTeamMemberMutationVariables = {id: string;data: BodyType<TeamMemberInput>}
+
+    export const useAddTeamMember = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addTeamMember>>, TError,AddTeamMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addTeamMember>>,
+        TError,
+        AddTeamMemberMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAddTeamMemberMutationOptions(options));
+    }
+
+export const getRemoveTeamMemberUrl = (id: string,
+    memberId: string,) => {
+
+
+
+
+  return `/api/businesses/${id}/team/${memberId}`
+}
+
+export const removeTeamMember = async (id: string,
+    memberId: string, options?: Parameters<typeof customFetch>[1]): Promise<TeamMember[]> => {
+
+  return customFetch<TeamMember[]>(getRemoveTeamMemberUrl(id,memberId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveTeamMemberMutationKey = () => ['removeTeamMember'] as const;
+
+export const getRemoveTeamMemberMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeTeamMember>>, TError,RemoveTeamMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeTeamMember>>, TError,RemoveTeamMemberMutationVariables, TContext> => {
+
+const mutationKey = getRemoveTeamMemberMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeTeamMember>>, RemoveTeamMemberMutationVariables> = (props) => {
+          const {id,memberId} = props ?? {};
+
+          return  removeTeamMember(id,memberId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveTeamMemberMutationResult = NonNullable<Awaited<ReturnType<typeof removeTeamMember>>>
+
+    export type RemoveTeamMemberMutationError = ErrorType<unknown>
+    export type RemoveTeamMemberMutationVariables = {id: string;memberId: string}
+
+    export const useRemoveTeamMember = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeTeamMember>>, TError,RemoveTeamMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeTeamMember>>,
+        TError,
+        RemoveTeamMemberMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRemoveTeamMemberMutationOptions(options));
+    }
 
 export const getGetForecastUrl = (params: GetForecastParams,) => {
   const normalizedParams = new URLSearchParams();

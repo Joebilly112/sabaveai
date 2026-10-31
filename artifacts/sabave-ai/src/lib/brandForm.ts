@@ -1,6 +1,9 @@
 import type { Business, BusinessInput, BrandKitChannelsItem, BrandKitLanguage, BusinessInputType } from '@workspace/api-client-react';
+import { asArray } from './as-array';
 import { isHex } from './colorExtract';
 import type { ProductRow } from '@/components/brand/ProductListEditor';
+
+export type MenuDraft = { id: string; name: string; price: string; imageDataUrl: string; bestseller: boolean };
 
 export const CITY_PRESETS = [
   { city: 'Kuala Lumpur', lat: 3.139, lon: 101.6869 },
@@ -23,9 +26,10 @@ export type FormState = {
   logoDataUrl: string; brandColours: string[];
   pastPosterDataUrl: string; posterColours: string[]; posterDescription: string; posterStyleSummary: string;
   websiteUrl: string; websiteVoiceSummary: string;
-  ethos: string; toneChips: string[]; products: ProductRow[]; targetCustomers: string; delivery: boolean;
+  description: string; ethos: string; toneChips: string[]; products: ProductRow[]; menuItems: MenuDraft[];
+  targetCustomers: string; delivery: boolean; takeaway: boolean;
   channels: BrandKitChannelsItem[]; language: BrandKitLanguage; neverSay: string[];
-  budget: string; baseline: string; dip: string;
+  budget: string; baseline: string; dip: string; approverUserId: string;
   // pass-through fields we don't edit
   logoPath?: string; posterPath?: string; pastPosterPath?: string;
 };
@@ -33,27 +37,35 @@ export type FormState = {
 export const blankForm = (): FormState => ({
   name: '', type: 'cafe', city: 'Kuala Lumpur', lat: '3.139', lon: '101.6869',
   logoDataUrl: '', brandColours: ['#1F6F5C'], pastPosterDataUrl: '', posterColours: [], posterDescription: '', posterStyleSummary: '',
-  websiteUrl: '', websiteVoiceSummary: '', ethos: '', toneChips: [], products: [{ name: '', price: '' }], targetCustomers: '', delivery: false,
-  channels: ['facebook', 'instagram'], language: 'both', neverSay: [], budget: '300', baseline: '', dip: '',
+  websiteUrl: '', websiteVoiceSummary: '', description: '', ethos: '', toneChips: [], products: [{ name: '', price: '' }], menuItems: [],
+  targetCustomers: '', delivery: false, takeaway: false,
+  channels: ['facebook', 'instagram'], language: 'both', neverSay: [], budget: '300', baseline: '', dip: '', approverUserId: 'u2',
 });
 
 export function fromBusiness(b: Business): FormState {
-  const k = b.brandKit;
+  const k = b?.brandKit;
+  const products = asArray(k?.products);
+  const menuItems = asArray(k?.menuItems);
+  const colours = asArray<string>(k?.brandColours);
   return {
-    name: b.name, type: b.type as BusinessInputType, city: b.city, lat: String(b.lat), lon: String(b.lon),
-    logoDataUrl: k.logoDataUrl || '', brandColours: k.brandColours?.length ? [...k.brandColours] : ['#1F6F5C'],
-    pastPosterDataUrl: k.pastPosterDataUrl || '', posterColours: [...(k.posterColours || [])], posterDescription: k.posterDescription || '',
-    posterStyleSummary: k.posterStyleSummary || '', websiteUrl: k.websiteUrl || '', websiteVoiceSummary: k.websiteVoiceSummary || '',
-    ethos: k.ethos || '', toneChips: [...(k.toneChips || [])],
-    products: k.products?.length ? k.products.map((p) => ({ name: p.name, price: String(p.priceRM) })) : [{ name: '', price: '' }],
-    targetCustomers: k.targetCustomers || '', delivery: !!k.delivery, channels: [...(k.channels || [])], language: k.language || 'both',
-    neverSay: [...(k.neverSay || [])], budget: String(k.monthlyAdBudgetCapRM ?? ''), baseline: String(k.baselineWeeklySalesRM ?? ''),
-    dip: String(k.lastBadWeatherDipPct ?? ''), logoPath: k.logoPath, posterPath: k.posterPath, pastPosterPath: k.pastPosterPath,
+    name: b?.name || '', type: (b?.type as BusinessInputType) || 'cafe', city: b?.city || '', lat: String(b?.lat ?? ''), lon: String(b?.lon ?? ''),
+    logoDataUrl: k?.logoDataUrl || '', brandColours: colours.length ? [...colours] : ['#1F6F5C'],
+    pastPosterDataUrl: k?.pastPosterDataUrl || '', posterColours: [...asArray<string>(k?.posterColours)], posterDescription: k?.posterDescription || '',
+    posterStyleSummary: k?.posterStyleSummary || '', websiteUrl: k?.websiteUrl || '', websiteVoiceSummary: k?.websiteVoiceSummary || '',
+    description: k?.description || '', ethos: k?.ethos || '', toneChips: [...asArray<string>(k?.toneChips)],
+    products: products.length ? products.map((p) => ({ name: p.name, price: String(p.priceRM) })) : [{ name: '', price: '' }],
+    menuItems: menuItems.map((item) => ({ id: item.id, name: item.name, price: String(item.priceRM), imageDataUrl: item.imageDataUrl || '', bestseller: !!item.bestseller })),
+    targetCustomers: k?.targetCustomers || '', delivery: !!k?.delivery, takeaway: !!k?.takeaway, channels: [...asArray<BrandKitChannelsItem>(k?.channels)], language: k?.language || 'both',
+    neverSay: [...asArray<string>(k?.neverSay)], budget: String(k?.monthlyAdBudgetCapRM ?? ''),
+    baseline: k?.baselineWeeklySalesRM == null ? '' : String(k.baselineWeeklySalesRM),
+    dip: k?.lastBadWeatherDipPct == null ? '' : String(k.lastBadWeatherDipPct),
+    approverUserId: k?.approverUserId || 'u2',
+    logoPath: k?.logoPath, posterPath: k?.posterPath, pastPosterPath: k?.pastPosterPath,
   };
 }
 
 const num = (s: string) => (s.trim() === '' ? NaN : Number(s));
-export const API_DATA_URL_LIMIT = 6 * 1024 * 1024;
+export const API_DATA_URL_LIMIT = 45 * 1024 * 1024;
 
 export function toInput(f: FormState): { input?: BusinessInput; errors: string[] } {
   const e: string[] = [];
@@ -64,20 +76,32 @@ export function toInput(f: FormState): { input?: BusinessInput; errors: string[]
   if (!(lon >= -180 && lon <= 180)) e.push('Longitude must be between -180 and 180.');
   if (f.brandColours.length < 1 || f.brandColours.some((c) => !isHex(c))) e.push('Brand colours need 1 to 3 valid hex codes like #1F6F5C.');
   if (f.posterColours.some((c) => !isHex(c))) e.push('Poster colours must be valid hex codes.');
+  if (f.description.trim().length > 200) e.push('Description must be 200 characters or fewer.');
   if (!f.ethos.trim()) e.push('Brand ethos is required.');
-  const products = f.products.filter((p) => p.name.trim() || p.price.trim());
+  const menu = f.menuItems.filter((item) => item.name.trim() || item.price.trim() || item.imageDataUrl);
+  if (menu.length > 15) e.push('Keep the menu to 15 items.');
+  menu.forEach((item, i) => {
+    if (!item.name.trim()) e.push(`Menu item ${i + 1} needs a name.`);
+    const price = num(item.price);
+    if (!(price > 0)) e.push(`Menu item ${i + 1} needs a price above RM 0.`);
+  });
+  const products = menu.length
+    ? menu.map((item) => ({ name: item.name.trim(), price: item.price }))
+    : f.products.filter((p) => p.name.trim() || p.price.trim());
   if (!products.length) e.push('Add at least one product.');
-  products.forEach((p, i) => {
+  if (!menu.length) products.forEach((p, i) => {
     if (!p.name.trim()) e.push(`Product ${i + 1} needs a name.`);
     const v = num(p.price); if (!(v >= 0)) e.push(`Product ${i + 1} needs a price of RM 0 or more.`);
   });
   if (!f.targetCustomers.trim()) e.push('Describe your target customers.');
   if (!f.channels.length) e.push('Pick at least one channel.');
   if (!(budget >= 0 && budget <= 1_000_000)) e.push('Ad budget cap must be RM 0 – 1,000,000.');
-  if (!(baseline >= 0)) e.push('Baseline weekly sales must be RM 0 or more.');
-  if (!(dip >= 0 && dip <= 100)) e.push('Bad-weather dip must be 0 – 100%.');
-  const imgBytes = f.logoDataUrl.length + f.pastPosterDataUrl.length;
-  if (imgBytes >= API_DATA_URL_LIMIT) e.push(`Images total ${(imgBytes / 1048576).toFixed(1)} MB once encoded. Keep logo + poster under 6 MB.`);
+  const baselineSet = f.baseline.trim() !== '';
+  const dipSet = f.dip.trim() !== '';
+  if (baselineSet && !(baseline >= 0)) e.push('Baseline weekly sales must be RM 0 or more.');
+  if (dipSet && !(dip >= 0 && dip <= 100)) e.push('Bad-weather dip must be 0 – 100%.');
+  const imgBytes = f.logoDataUrl.length + f.pastPosterDataUrl.length + f.menuItems.reduce((sum, item) => sum + item.imageDataUrl.length, 0);
+  if (imgBytes >= API_DATA_URL_LIMIT) e.push(`Images total ${(imgBytes / 1048576).toFixed(1)} MB once encoded. Keep each image under 2 MB.`);
   if (e.length) return { errors: e };
   const opt = (s: string) => (s.trim() ? s.trim() : undefined);
   return {
@@ -91,10 +115,17 @@ export function toInput(f: FormState): { input?: BusinessInput; errors: string[]
         brandColours: f.brandColours.map((c) => c.toUpperCase()), posterColours: f.posterColours.map((c) => c.toUpperCase()),
         posterDescription: opt(f.posterDescription), posterStyleSummary: opt(f.posterStyleSummary),
         websiteUrl: opt(f.websiteUrl), websiteVoiceSummary: opt(f.websiteVoiceSummary),
+        description: opt(f.description),
         ethos: f.ethos.trim(), toneChips: f.toneChips,
         products: products.map((p) => ({ name: p.name.trim(), priceRM: Number(p.price) })),
-        targetCustomers: f.targetCustomers.trim(), delivery: f.delivery, channels: f.channels, language: f.language,
-        neverSay: f.neverSay, monthlyAdBudgetCapRM: budget, approverUserId: 'u2', baselineWeeklySalesRM: baseline, lastBadWeatherDipPct: dip,
+        menuItems: menu.length ? menu.map((item) => ({
+          id: item.id, name: item.name.trim(), priceRM: Number(item.price),
+          imageDataUrl: item.imageDataUrl || undefined, bestseller: item.bestseller || undefined,
+        })) : [],
+        targetCustomers: f.targetCustomers.trim(), delivery: f.delivery, takeaway: f.takeaway, channels: f.channels, language: f.language,
+        neverSay: f.neverSay, monthlyAdBudgetCapRM: budget, approverUserId: f.approverUserId || 'u2',
+        ...(baselineSet ? { baselineWeeklySalesRM: baseline } : {}),
+        ...(dipSet ? { lastBadWeatherDipPct: dip } : {}),
       },
     },
   };

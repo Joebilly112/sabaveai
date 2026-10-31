@@ -13,5 +13,6 @@ export const BusinessInputType = {
   cafe: 'cafe',
   laundromat: 'laundromat',
   retail: 'retail',
+  salon: 'salon',
   other: 'other',
 } as const;

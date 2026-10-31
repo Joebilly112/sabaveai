@@ -58,6 +58,18 @@ export const GetBusinessParams = zod.object({
   "id": zod.coerce.string()
 })
 
+export const getBusinessResponseOnboardingStepMin = 0;
+export const getBusinessResponseOnboardingStepMax = 8;
+
+export const getBusinessResponseTeamMembersItemIdMax = 80;
+
+export const getBusinessResponseTeamMembersItemNameMax = 150;
+
+export const getBusinessResponseTeamMembersItemEmailMin = 3;
+export const getBusinessResponseTeamMembersItemEmailMax = 200;
+
+export const getBusinessResponseTeamMembersMax = 30;
+
 export const getBusinessResponseBrandKitLogoDataUrlMax = 2796250;
 
 export const getBusinessResponseBrandKitPastPosterDataUrlMax = 2796250;
@@ -76,6 +88,9 @@ export const getBusinessResponseBrandKitWebsiteUrlMax = 2000;
 
 export const getBusinessResponseBrandKitWebsiteVoiceSummaryMax = 3000;
 
+export const getBusinessResponseBrandKitDescriptionMax = 200;
+
+export const getBusinessResponseBrandKitEthosMin = 0;
 export const getBusinessResponseBrandKitEthosMax = 2000;
 
 export const getBusinessResponseBrandKitToneChipsItemMax = 80;
@@ -86,8 +101,21 @@ export const getBusinessResponseBrandKitProductsItemNameMax = 150;
 
 export const getBusinessResponseBrandKitProductsItemPriceRMMin = 0;
 
+export const getBusinessResponseBrandKitProductsMin = 0;
 export const getBusinessResponseBrandKitProductsMax = 100;
 
+export const getBusinessResponseBrandKitMenuItemsItemIdMax = 80;
+
+export const getBusinessResponseBrandKitMenuItemsItemNameMax = 150;
+
+export const getBusinessResponseBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const getBusinessResponseBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const getBusinessResponseBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const getBusinessResponseBrandKitMenuItemsMax = 15;
+
+export const getBusinessResponseBrandKitTargetCustomersMin = 0;
 export const getBusinessResponseBrandKitTargetCustomersMax = 2000;
 
 export const getBusinessResponseBrandKitNeverSayItemMax = 100;
@@ -96,6 +124,8 @@ export const getBusinessResponseBrandKitNeverSayMax = 100;
 
 export const getBusinessResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
 export const getBusinessResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const getBusinessResponseBrandKitApproverUserIdMax = 80;
 
 export const getBusinessResponseBrandKitBaselineWeeklySalesRMMin = 0;
 
@@ -107,7 +137,16 @@ export const getBusinessResponseBrandKitLastBadWeatherDipPctMax = 100;
 export const GetBusinessResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(getBusinessResponseOnboardingStepMin).max(getBusinessResponseOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(getBusinessResponseTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(getBusinessResponseTeamMembersItemNameMax),
+  "email": zod.string().min(getBusinessResponseTeamMembersItemEmailMin).max(getBusinessResponseTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(getBusinessResponseTeamMembersMax).optional(),
   "city": zod.string(),
   "lat": zod.number(),
   "lon": zod.number(),
@@ -127,21 +166,30 @@ export const GetBusinessResponse = zod.object({
   "posterStyleSummary": zod.string().max(getBusinessResponseBrandKitPosterStyleSummaryMax).optional(),
   "websiteUrl": zod.string().max(getBusinessResponseBrandKitWebsiteUrlMax).optional(),
   "websiteVoiceSummary": zod.string().max(getBusinessResponseBrandKitWebsiteVoiceSummaryMax).optional(),
-  "ethos": zod.string().min(1).max(getBusinessResponseBrandKitEthosMax),
+  "description": zod.string().max(getBusinessResponseBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(getBusinessResponseBrandKitEthosMin).max(getBusinessResponseBrandKitEthosMax),
   "toneChips": zod.array(zod.string().min(1).max(getBusinessResponseBrandKitToneChipsItemMax)).max(getBusinessResponseBrandKitToneChipsMax),
   "products": zod.array(zod.object({
   "name": zod.string().min(1).max(getBusinessResponseBrandKitProductsItemNameMax),
   "priceRM": zod.number().min(getBusinessResponseBrandKitProductsItemPriceRMMin)
-})).min(1).max(getBusinessResponseBrandKitProductsMax),
-  "targetCustomers": zod.string().min(1).max(getBusinessResponseBrandKitTargetCustomersMax),
+})).min(getBusinessResponseBrandKitProductsMin).max(getBusinessResponseBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(getBusinessResponseBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(getBusinessResponseBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(getBusinessResponseBrandKitMenuItemsItemPriceRMExclusiveMin).max(getBusinessResponseBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(getBusinessResponseBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(getBusinessResponseBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(getBusinessResponseBrandKitTargetCustomersMin).max(getBusinessResponseBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
   "neverSay": zod.array(zod.string().min(1).max(getBusinessResponseBrandKitNeverSayItemMax)).max(getBusinessResponseBrandKitNeverSayMax),
   "monthlyAdBudgetCapRM": zod.number().min(getBusinessResponseBrandKitMonthlyAdBudgetCapRMMin).max(getBusinessResponseBrandKitMonthlyAdBudgetCapRMMax),
-  "approverUserId": zod.enum(['u2']),
-  "baselineWeeklySalesRM": zod.number().min(getBusinessResponseBrandKitBaselineWeeklySalesRMMin),
-  "lastBadWeatherDipPct": zod.number().min(getBusinessResponseBrandKitLastBadWeatherDipPctMin).max(getBusinessResponseBrandKitLastBadWeatherDipPctMax)
+  "approverUserId": zod.string().min(1).max(getBusinessResponseBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(getBusinessResponseBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(getBusinessResponseBrandKitLastBadWeatherDipPctMin).max(getBusinessResponseBrandKitLastBadWeatherDipPctMax).optional()
 })
 })
 
@@ -152,6 +200,7 @@ export const UpdateBusinessParams = zod.object({
 
 export const updateBusinessBodyNameMax = 150;
 
+export const updateBusinessBodyCityMin = 0;
 export const updateBusinessBodyCityMax = 150;
 
 export const updateBusinessBodyLatMin = -90;
@@ -159,6 +208,18 @@ export const updateBusinessBodyLatMax = 90;
 
 export const updateBusinessBodyLonMin = -180;
 export const updateBusinessBodyLonMax = 180;
+
+export const updateBusinessBodyOnboardingStepMin = 0;
+export const updateBusinessBodyOnboardingStepMax = 8;
+
+export const updateBusinessBodyTeamMembersItemIdMax = 80;
+
+export const updateBusinessBodyTeamMembersItemNameMax = 150;
+
+export const updateBusinessBodyTeamMembersItemEmailMin = 3;
+export const updateBusinessBodyTeamMembersItemEmailMax = 200;
+
+export const updateBusinessBodyTeamMembersMax = 30;
 
 export const updateBusinessBodyBrandKitLogoDataUrlMax = 2796250;
 
@@ -178,6 +239,9 @@ export const updateBusinessBodyBrandKitWebsiteUrlMax = 2000;
 
 export const updateBusinessBodyBrandKitWebsiteVoiceSummaryMax = 3000;
 
+export const updateBusinessBodyBrandKitDescriptionMax = 200;
+
+export const updateBusinessBodyBrandKitEthosMin = 0;
 export const updateBusinessBodyBrandKitEthosMax = 2000;
 
 export const updateBusinessBodyBrandKitToneChipsItemMax = 80;
@@ -188,8 +252,21 @@ export const updateBusinessBodyBrandKitProductsItemNameMax = 150;
 
 export const updateBusinessBodyBrandKitProductsItemPriceRMMin = 0;
 
+export const updateBusinessBodyBrandKitProductsMin = 0;
 export const updateBusinessBodyBrandKitProductsMax = 100;
 
+export const updateBusinessBodyBrandKitMenuItemsItemIdMax = 80;
+
+export const updateBusinessBodyBrandKitMenuItemsItemNameMax = 150;
+
+export const updateBusinessBodyBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const updateBusinessBodyBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const updateBusinessBodyBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const updateBusinessBodyBrandKitMenuItemsMax = 15;
+
+export const updateBusinessBodyBrandKitTargetCustomersMin = 0;
 export const updateBusinessBodyBrandKitTargetCustomersMax = 2000;
 
 export const updateBusinessBodyBrandKitNeverSayItemMax = 100;
@@ -198,6 +275,8 @@ export const updateBusinessBodyBrandKitNeverSayMax = 100;
 
 export const updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMin = 0;
 export const updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const updateBusinessBodyBrandKitApproverUserIdMax = 80;
 
 export const updateBusinessBodyBrandKitBaselineWeeklySalesRMMin = 0;
 
@@ -208,10 +287,19 @@ export const updateBusinessBodyBrandKitLastBadWeatherDipPctMax = 100;
 
 export const UpdateBusinessBody = zod.object({
   "name": zod.string().min(1).max(updateBusinessBodyNameMax),
-  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
-  "city": zod.string().min(1).max(updateBusinessBodyCityMax),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "city": zod.string().min(updateBusinessBodyCityMin).max(updateBusinessBodyCityMax),
   "lat": zod.number().min(updateBusinessBodyLatMin).max(updateBusinessBodyLatMax),
   "lon": zod.number().min(updateBusinessBodyLonMin).max(updateBusinessBodyLonMax),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(updateBusinessBodyOnboardingStepMin).max(updateBusinessBodyOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateBusinessBodyTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(updateBusinessBodyTeamMembersItemNameMax),
+  "email": zod.string().min(updateBusinessBodyTeamMembersItemEmailMin).max(updateBusinessBodyTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(updateBusinessBodyTeamMembersMax).optional(),
   "brandKit": zod.object({
   "logoPath": zod.string().optional(),
   "logoDataUrl": zod.string().max(updateBusinessBodyBrandKitLogoDataUrlMax).optional(),
@@ -224,23 +312,44 @@ export const UpdateBusinessBody = zod.object({
   "posterStyleSummary": zod.string().max(updateBusinessBodyBrandKitPosterStyleSummaryMax).optional(),
   "websiteUrl": zod.string().max(updateBusinessBodyBrandKitWebsiteUrlMax).optional(),
   "websiteVoiceSummary": zod.string().max(updateBusinessBodyBrandKitWebsiteVoiceSummaryMax).optional(),
-  "ethos": zod.string().min(1).max(updateBusinessBodyBrandKitEthosMax),
+  "description": zod.string().max(updateBusinessBodyBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(updateBusinessBodyBrandKitEthosMin).max(updateBusinessBodyBrandKitEthosMax),
   "toneChips": zod.array(zod.string().min(1).max(updateBusinessBodyBrandKitToneChipsItemMax)).max(updateBusinessBodyBrandKitToneChipsMax),
   "products": zod.array(zod.object({
   "name": zod.string().min(1).max(updateBusinessBodyBrandKitProductsItemNameMax),
   "priceRM": zod.number().min(updateBusinessBodyBrandKitProductsItemPriceRMMin)
-})).min(1).max(updateBusinessBodyBrandKitProductsMax),
-  "targetCustomers": zod.string().min(1).max(updateBusinessBodyBrandKitTargetCustomersMax),
+})).min(updateBusinessBodyBrandKitProductsMin).max(updateBusinessBodyBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateBusinessBodyBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(updateBusinessBodyBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(updateBusinessBodyBrandKitMenuItemsItemPriceRMExclusiveMin).max(updateBusinessBodyBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(updateBusinessBodyBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(updateBusinessBodyBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(updateBusinessBodyBrandKitTargetCustomersMin).max(updateBusinessBodyBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
   "neverSay": zod.array(zod.string().min(1).max(updateBusinessBodyBrandKitNeverSayItemMax)).max(updateBusinessBodyBrandKitNeverSayMax),
   "monthlyAdBudgetCapRM": zod.number().min(updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMin).max(updateBusinessBodyBrandKitMonthlyAdBudgetCapRMMax),
-  "approverUserId": zod.enum(['u2']),
-  "baselineWeeklySalesRM": zod.number().min(updateBusinessBodyBrandKitBaselineWeeklySalesRMMin),
-  "lastBadWeatherDipPct": zod.number().min(updateBusinessBodyBrandKitLastBadWeatherDipPctMin).max(updateBusinessBodyBrandKitLastBadWeatherDipPctMax)
+  "approverUserId": zod.string().min(1).max(updateBusinessBodyBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(updateBusinessBodyBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(updateBusinessBodyBrandKitLastBadWeatherDipPctMin).max(updateBusinessBodyBrandKitLastBadWeatherDipPctMax).optional()
 })
 })
+
+export const updateBusinessResponseOnboardingStepMin = 0;
+export const updateBusinessResponseOnboardingStepMax = 8;
+
+export const updateBusinessResponseTeamMembersItemIdMax = 80;
+
+export const updateBusinessResponseTeamMembersItemNameMax = 150;
+
+export const updateBusinessResponseTeamMembersItemEmailMin = 3;
+export const updateBusinessResponseTeamMembersItemEmailMax = 200;
+
+export const updateBusinessResponseTeamMembersMax = 30;
 
 export const updateBusinessResponseBrandKitLogoDataUrlMax = 2796250;
 
@@ -260,6 +369,9 @@ export const updateBusinessResponseBrandKitWebsiteUrlMax = 2000;
 
 export const updateBusinessResponseBrandKitWebsiteVoiceSummaryMax = 3000;
 
+export const updateBusinessResponseBrandKitDescriptionMax = 200;
+
+export const updateBusinessResponseBrandKitEthosMin = 0;
 export const updateBusinessResponseBrandKitEthosMax = 2000;
 
 export const updateBusinessResponseBrandKitToneChipsItemMax = 80;
@@ -270,8 +382,21 @@ export const updateBusinessResponseBrandKitProductsItemNameMax = 150;
 
 export const updateBusinessResponseBrandKitProductsItemPriceRMMin = 0;
 
+export const updateBusinessResponseBrandKitProductsMin = 0;
 export const updateBusinessResponseBrandKitProductsMax = 100;
 
+export const updateBusinessResponseBrandKitMenuItemsItemIdMax = 80;
+
+export const updateBusinessResponseBrandKitMenuItemsItemNameMax = 150;
+
+export const updateBusinessResponseBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const updateBusinessResponseBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const updateBusinessResponseBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const updateBusinessResponseBrandKitMenuItemsMax = 15;
+
+export const updateBusinessResponseBrandKitTargetCustomersMin = 0;
 export const updateBusinessResponseBrandKitTargetCustomersMax = 2000;
 
 export const updateBusinessResponseBrandKitNeverSayItemMax = 100;
@@ -280,6 +405,8 @@ export const updateBusinessResponseBrandKitNeverSayMax = 100;
 
 export const updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
 export const updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const updateBusinessResponseBrandKitApproverUserIdMax = 80;
 
 export const updateBusinessResponseBrandKitBaselineWeeklySalesRMMin = 0;
 
@@ -291,7 +418,16 @@ export const updateBusinessResponseBrandKitLastBadWeatherDipPctMax = 100;
 export const UpdateBusinessResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(updateBusinessResponseOnboardingStepMin).max(updateBusinessResponseOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateBusinessResponseTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(updateBusinessResponseTeamMembersItemNameMax),
+  "email": zod.string().min(updateBusinessResponseTeamMembersItemEmailMin).max(updateBusinessResponseTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(updateBusinessResponseTeamMembersMax).optional(),
   "city": zod.string(),
   "lat": zod.number(),
   "lon": zod.number(),
@@ -311,21 +447,30 @@ export const UpdateBusinessResponse = zod.object({
   "posterStyleSummary": zod.string().max(updateBusinessResponseBrandKitPosterStyleSummaryMax).optional(),
   "websiteUrl": zod.string().max(updateBusinessResponseBrandKitWebsiteUrlMax).optional(),
   "websiteVoiceSummary": zod.string().max(updateBusinessResponseBrandKitWebsiteVoiceSummaryMax).optional(),
-  "ethos": zod.string().min(1).max(updateBusinessResponseBrandKitEthosMax),
+  "description": zod.string().max(updateBusinessResponseBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(updateBusinessResponseBrandKitEthosMin).max(updateBusinessResponseBrandKitEthosMax),
   "toneChips": zod.array(zod.string().min(1).max(updateBusinessResponseBrandKitToneChipsItemMax)).max(updateBusinessResponseBrandKitToneChipsMax),
   "products": zod.array(zod.object({
   "name": zod.string().min(1).max(updateBusinessResponseBrandKitProductsItemNameMax),
   "priceRM": zod.number().min(updateBusinessResponseBrandKitProductsItemPriceRMMin)
-})).min(1).max(updateBusinessResponseBrandKitProductsMax),
-  "targetCustomers": zod.string().min(1).max(updateBusinessResponseBrandKitTargetCustomersMax),
+})).min(updateBusinessResponseBrandKitProductsMin).max(updateBusinessResponseBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(updateBusinessResponseBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(updateBusinessResponseBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(updateBusinessResponseBrandKitMenuItemsItemPriceRMExclusiveMin).max(updateBusinessResponseBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(updateBusinessResponseBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(updateBusinessResponseBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(updateBusinessResponseBrandKitTargetCustomersMin).max(updateBusinessResponseBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
   "neverSay": zod.array(zod.string().min(1).max(updateBusinessResponseBrandKitNeverSayItemMax)).max(updateBusinessResponseBrandKitNeverSayMax),
   "monthlyAdBudgetCapRM": zod.number().min(updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMin).max(updateBusinessResponseBrandKitMonthlyAdBudgetCapRMMax),
-  "approverUserId": zod.enum(['u2']),
-  "baselineWeeklySalesRM": zod.number().min(updateBusinessResponseBrandKitBaselineWeeklySalesRMMin),
-  "lastBadWeatherDipPct": zod.number().min(updateBusinessResponseBrandKitLastBadWeatherDipPctMin).max(updateBusinessResponseBrandKitLastBadWeatherDipPctMax)
+  "approverUserId": zod.string().min(1).max(updateBusinessResponseBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(updateBusinessResponseBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(updateBusinessResponseBrandKitLastBadWeatherDipPctMin).max(updateBusinessResponseBrandKitLastBadWeatherDipPctMax).optional()
 })
 })
 
@@ -803,6 +948,7 @@ export const HealthCheckResponse = zod.object({
 
 export const createBusinessBodyNameMax = 150;
 
+export const createBusinessBodyCityMin = 0;
 export const createBusinessBodyCityMax = 150;
 
 export const createBusinessBodyLatMin = -90;
@@ -810,6 +956,18 @@ export const createBusinessBodyLatMax = 90;
 
 export const createBusinessBodyLonMin = -180;
 export const createBusinessBodyLonMax = 180;
+
+export const createBusinessBodyOnboardingStepMin = 0;
+export const createBusinessBodyOnboardingStepMax = 8;
+
+export const createBusinessBodyTeamMembersItemIdMax = 80;
+
+export const createBusinessBodyTeamMembersItemNameMax = 150;
+
+export const createBusinessBodyTeamMembersItemEmailMin = 3;
+export const createBusinessBodyTeamMembersItemEmailMax = 200;
+
+export const createBusinessBodyTeamMembersMax = 30;
 
 export const createBusinessBodyBrandKitLogoDataUrlMax = 2796250;
 
@@ -829,6 +987,9 @@ export const createBusinessBodyBrandKitWebsiteUrlMax = 2000;
 
 export const createBusinessBodyBrandKitWebsiteVoiceSummaryMax = 3000;
 
+export const createBusinessBodyBrandKitDescriptionMax = 200;
+
+export const createBusinessBodyBrandKitEthosMin = 0;
 export const createBusinessBodyBrandKitEthosMax = 2000;
 
 export const createBusinessBodyBrandKitToneChipsItemMax = 80;
@@ -839,8 +1000,21 @@ export const createBusinessBodyBrandKitProductsItemNameMax = 150;
 
 export const createBusinessBodyBrandKitProductsItemPriceRMMin = 0;
 
+export const createBusinessBodyBrandKitProductsMin = 0;
 export const createBusinessBodyBrandKitProductsMax = 100;
 
+export const createBusinessBodyBrandKitMenuItemsItemIdMax = 80;
+
+export const createBusinessBodyBrandKitMenuItemsItemNameMax = 150;
+
+export const createBusinessBodyBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const createBusinessBodyBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const createBusinessBodyBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const createBusinessBodyBrandKitMenuItemsMax = 15;
+
+export const createBusinessBodyBrandKitTargetCustomersMin = 0;
 export const createBusinessBodyBrandKitTargetCustomersMax = 2000;
 
 export const createBusinessBodyBrandKitNeverSayItemMax = 100;
@@ -849,6 +1023,8 @@ export const createBusinessBodyBrandKitNeverSayMax = 100;
 
 export const createBusinessBodyBrandKitMonthlyAdBudgetCapRMMin = 0;
 export const createBusinessBodyBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const createBusinessBodyBrandKitApproverUserIdMax = 80;
 
 export const createBusinessBodyBrandKitBaselineWeeklySalesRMMin = 0;
 
@@ -859,10 +1035,19 @@ export const createBusinessBodyBrandKitLastBadWeatherDipPctMax = 100;
 
 export const CreateBusinessBody = zod.object({
   "name": zod.string().min(1).max(createBusinessBodyNameMax),
-  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
-  "city": zod.string().min(1).max(createBusinessBodyCityMax),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "city": zod.string().min(createBusinessBodyCityMin).max(createBusinessBodyCityMax),
   "lat": zod.number().min(createBusinessBodyLatMin).max(createBusinessBodyLatMax),
   "lon": zod.number().min(createBusinessBodyLonMin).max(createBusinessBodyLonMax),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(createBusinessBodyOnboardingStepMin).max(createBusinessBodyOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(createBusinessBodyTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(createBusinessBodyTeamMembersItemNameMax),
+  "email": zod.string().min(createBusinessBodyTeamMembersItemEmailMin).max(createBusinessBodyTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(createBusinessBodyTeamMembersMax).optional(),
   "brandKit": zod.object({
   "logoPath": zod.string().optional(),
   "logoDataUrl": zod.string().max(createBusinessBodyBrandKitLogoDataUrlMax).optional(),
@@ -875,23 +1060,44 @@ export const CreateBusinessBody = zod.object({
   "posterStyleSummary": zod.string().max(createBusinessBodyBrandKitPosterStyleSummaryMax).optional(),
   "websiteUrl": zod.string().max(createBusinessBodyBrandKitWebsiteUrlMax).optional(),
   "websiteVoiceSummary": zod.string().max(createBusinessBodyBrandKitWebsiteVoiceSummaryMax).optional(),
-  "ethos": zod.string().min(1).max(createBusinessBodyBrandKitEthosMax),
+  "description": zod.string().max(createBusinessBodyBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(createBusinessBodyBrandKitEthosMin).max(createBusinessBodyBrandKitEthosMax),
   "toneChips": zod.array(zod.string().min(1).max(createBusinessBodyBrandKitToneChipsItemMax)).max(createBusinessBodyBrandKitToneChipsMax),
   "products": zod.array(zod.object({
   "name": zod.string().min(1).max(createBusinessBodyBrandKitProductsItemNameMax),
   "priceRM": zod.number().min(createBusinessBodyBrandKitProductsItemPriceRMMin)
-})).min(1).max(createBusinessBodyBrandKitProductsMax),
-  "targetCustomers": zod.string().min(1).max(createBusinessBodyBrandKitTargetCustomersMax),
+})).min(createBusinessBodyBrandKitProductsMin).max(createBusinessBodyBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(createBusinessBodyBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(createBusinessBodyBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(createBusinessBodyBrandKitMenuItemsItemPriceRMExclusiveMin).max(createBusinessBodyBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(createBusinessBodyBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(createBusinessBodyBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(createBusinessBodyBrandKitTargetCustomersMin).max(createBusinessBodyBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
   "neverSay": zod.array(zod.string().min(1).max(createBusinessBodyBrandKitNeverSayItemMax)).max(createBusinessBodyBrandKitNeverSayMax),
   "monthlyAdBudgetCapRM": zod.number().min(createBusinessBodyBrandKitMonthlyAdBudgetCapRMMin).max(createBusinessBodyBrandKitMonthlyAdBudgetCapRMMax),
-  "approverUserId": zod.enum(['u2']),
-  "baselineWeeklySalesRM": zod.number().min(createBusinessBodyBrandKitBaselineWeeklySalesRMMin),
-  "lastBadWeatherDipPct": zod.number().min(createBusinessBodyBrandKitLastBadWeatherDipPctMin).max(createBusinessBodyBrandKitLastBadWeatherDipPctMax)
+  "approverUserId": zod.string().min(1).max(createBusinessBodyBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(createBusinessBodyBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(createBusinessBodyBrandKitLastBadWeatherDipPctMin).max(createBusinessBodyBrandKitLastBadWeatherDipPctMax).optional()
 })
 })
+
+export const createBusinessResponseOnboardingStepMin = 0;
+export const createBusinessResponseOnboardingStepMax = 8;
+
+export const createBusinessResponseTeamMembersItemIdMax = 80;
+
+export const createBusinessResponseTeamMembersItemNameMax = 150;
+
+export const createBusinessResponseTeamMembersItemEmailMin = 3;
+export const createBusinessResponseTeamMembersItemEmailMax = 200;
+
+export const createBusinessResponseTeamMembersMax = 30;
 
 export const createBusinessResponseBrandKitLogoDataUrlMax = 2796250;
 
@@ -911,6 +1117,9 @@ export const createBusinessResponseBrandKitWebsiteUrlMax = 2000;
 
 export const createBusinessResponseBrandKitWebsiteVoiceSummaryMax = 3000;
 
+export const createBusinessResponseBrandKitDescriptionMax = 200;
+
+export const createBusinessResponseBrandKitEthosMin = 0;
 export const createBusinessResponseBrandKitEthosMax = 2000;
 
 export const createBusinessResponseBrandKitToneChipsItemMax = 80;
@@ -921,8 +1130,21 @@ export const createBusinessResponseBrandKitProductsItemNameMax = 150;
 
 export const createBusinessResponseBrandKitProductsItemPriceRMMin = 0;
 
+export const createBusinessResponseBrandKitProductsMin = 0;
 export const createBusinessResponseBrandKitProductsMax = 100;
 
+export const createBusinessResponseBrandKitMenuItemsItemIdMax = 80;
+
+export const createBusinessResponseBrandKitMenuItemsItemNameMax = 150;
+
+export const createBusinessResponseBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const createBusinessResponseBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const createBusinessResponseBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const createBusinessResponseBrandKitMenuItemsMax = 15;
+
+export const createBusinessResponseBrandKitTargetCustomersMin = 0;
 export const createBusinessResponseBrandKitTargetCustomersMax = 2000;
 
 export const createBusinessResponseBrandKitNeverSayItemMax = 100;
@@ -931,6 +1153,8 @@ export const createBusinessResponseBrandKitNeverSayMax = 100;
 
 export const createBusinessResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
 export const createBusinessResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const createBusinessResponseBrandKitApproverUserIdMax = 80;
 
 export const createBusinessResponseBrandKitBaselineWeeklySalesRMMin = 0;
 
@@ -942,7 +1166,16 @@ export const createBusinessResponseBrandKitLastBadWeatherDipPctMax = 100;
 export const CreateBusinessResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(createBusinessResponseOnboardingStepMin).max(createBusinessResponseOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(createBusinessResponseTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(createBusinessResponseTeamMembersItemNameMax),
+  "email": zod.string().min(createBusinessResponseTeamMembersItemEmailMin).max(createBusinessResponseTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(createBusinessResponseTeamMembersMax).optional(),
   "city": zod.string(),
   "lat": zod.number(),
   "lon": zod.number(),
@@ -962,21 +1195,30 @@ export const CreateBusinessResponse = zod.object({
   "posterStyleSummary": zod.string().max(createBusinessResponseBrandKitPosterStyleSummaryMax).optional(),
   "websiteUrl": zod.string().max(createBusinessResponseBrandKitWebsiteUrlMax).optional(),
   "websiteVoiceSummary": zod.string().max(createBusinessResponseBrandKitWebsiteVoiceSummaryMax).optional(),
-  "ethos": zod.string().min(1).max(createBusinessResponseBrandKitEthosMax),
+  "description": zod.string().max(createBusinessResponseBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(createBusinessResponseBrandKitEthosMin).max(createBusinessResponseBrandKitEthosMax),
   "toneChips": zod.array(zod.string().min(1).max(createBusinessResponseBrandKitToneChipsItemMax)).max(createBusinessResponseBrandKitToneChipsMax),
   "products": zod.array(zod.object({
   "name": zod.string().min(1).max(createBusinessResponseBrandKitProductsItemNameMax),
   "priceRM": zod.number().min(createBusinessResponseBrandKitProductsItemPriceRMMin)
-})).min(1).max(createBusinessResponseBrandKitProductsMax),
-  "targetCustomers": zod.string().min(1).max(createBusinessResponseBrandKitTargetCustomersMax),
+})).min(createBusinessResponseBrandKitProductsMin).max(createBusinessResponseBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(createBusinessResponseBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(createBusinessResponseBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(createBusinessResponseBrandKitMenuItemsItemPriceRMExclusiveMin).max(createBusinessResponseBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(createBusinessResponseBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(createBusinessResponseBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(createBusinessResponseBrandKitTargetCustomersMin).max(createBusinessResponseBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
   "neverSay": zod.array(zod.string().min(1).max(createBusinessResponseBrandKitNeverSayItemMax)).max(createBusinessResponseBrandKitNeverSayMax),
   "monthlyAdBudgetCapRM": zod.number().min(createBusinessResponseBrandKitMonthlyAdBudgetCapRMMin).max(createBusinessResponseBrandKitMonthlyAdBudgetCapRMMax),
-  "approverUserId": zod.enum(['u2']),
-  "baselineWeeklySalesRM": zod.number().min(createBusinessResponseBrandKitBaselineWeeklySalesRMMin),
-  "lastBadWeatherDipPct": zod.number().min(createBusinessResponseBrandKitLastBadWeatherDipPctMin).max(createBusinessResponseBrandKitLastBadWeatherDipPctMax)
+  "approverUserId": zod.string().min(1).max(createBusinessResponseBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(createBusinessResponseBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(createBusinessResponseBrandKitLastBadWeatherDipPctMin).max(createBusinessResponseBrandKitLastBadWeatherDipPctMax).optional()
 })
 })
 
@@ -984,6 +1226,18 @@ export const CreateBusinessResponse = zod.object({
 /**
  * @summary List demo businesses
  */
+export const listBusinessesResponseOnboardingStepMin = 0;
+export const listBusinessesResponseOnboardingStepMax = 8;
+
+export const listBusinessesResponseTeamMembersItemIdMax = 80;
+
+export const listBusinessesResponseTeamMembersItemNameMax = 150;
+
+export const listBusinessesResponseTeamMembersItemEmailMin = 3;
+export const listBusinessesResponseTeamMembersItemEmailMax = 200;
+
+export const listBusinessesResponseTeamMembersMax = 30;
+
 export const listBusinessesResponseBrandKitLogoDataUrlMax = 2796250;
 
 export const listBusinessesResponseBrandKitPastPosterDataUrlMax = 2796250;
@@ -1002,6 +1256,9 @@ export const listBusinessesResponseBrandKitWebsiteUrlMax = 2000;
 
 export const listBusinessesResponseBrandKitWebsiteVoiceSummaryMax = 3000;
 
+export const listBusinessesResponseBrandKitDescriptionMax = 200;
+
+export const listBusinessesResponseBrandKitEthosMin = 0;
 export const listBusinessesResponseBrandKitEthosMax = 2000;
 
 export const listBusinessesResponseBrandKitToneChipsItemMax = 80;
@@ -1012,8 +1269,21 @@ export const listBusinessesResponseBrandKitProductsItemNameMax = 150;
 
 export const listBusinessesResponseBrandKitProductsItemPriceRMMin = 0;
 
+export const listBusinessesResponseBrandKitProductsMin = 0;
 export const listBusinessesResponseBrandKitProductsMax = 100;
 
+export const listBusinessesResponseBrandKitMenuItemsItemIdMax = 80;
+
+export const listBusinessesResponseBrandKitMenuItemsItemNameMax = 150;
+
+export const listBusinessesResponseBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const listBusinessesResponseBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const listBusinessesResponseBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const listBusinessesResponseBrandKitMenuItemsMax = 15;
+
+export const listBusinessesResponseBrandKitTargetCustomersMin = 0;
 export const listBusinessesResponseBrandKitTargetCustomersMax = 2000;
 
 export const listBusinessesResponseBrandKitNeverSayItemMax = 100;
@@ -1022,6 +1292,8 @@ export const listBusinessesResponseBrandKitNeverSayMax = 100;
 
 export const listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMin = 0;
 export const listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const listBusinessesResponseBrandKitApproverUserIdMax = 80;
 
 export const listBusinessesResponseBrandKitBaselineWeeklySalesRMMin = 0;
 
@@ -1033,7 +1305,16 @@ export const listBusinessesResponseBrandKitLastBadWeatherDipPctMax = 100;
 export const ListBusinessesResponseItem = zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "type": zod.enum(['cafe', 'laundromat', 'retail', 'other']),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(listBusinessesResponseOnboardingStepMin).max(listBusinessesResponseOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(listBusinessesResponseTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(listBusinessesResponseTeamMembersItemNameMax),
+  "email": zod.string().min(listBusinessesResponseTeamMembersItemEmailMin).max(listBusinessesResponseTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(listBusinessesResponseTeamMembersMax).optional(),
   "city": zod.string(),
   "lat": zod.number(),
   "lon": zod.number(),
@@ -1053,24 +1334,255 @@ export const ListBusinessesResponseItem = zod.object({
   "posterStyleSummary": zod.string().max(listBusinessesResponseBrandKitPosterStyleSummaryMax).optional(),
   "websiteUrl": zod.string().max(listBusinessesResponseBrandKitWebsiteUrlMax).optional(),
   "websiteVoiceSummary": zod.string().max(listBusinessesResponseBrandKitWebsiteVoiceSummaryMax).optional(),
-  "ethos": zod.string().min(1).max(listBusinessesResponseBrandKitEthosMax),
+  "description": zod.string().max(listBusinessesResponseBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(listBusinessesResponseBrandKitEthosMin).max(listBusinessesResponseBrandKitEthosMax),
   "toneChips": zod.array(zod.string().min(1).max(listBusinessesResponseBrandKitToneChipsItemMax)).max(listBusinessesResponseBrandKitToneChipsMax),
   "products": zod.array(zod.object({
   "name": zod.string().min(1).max(listBusinessesResponseBrandKitProductsItemNameMax),
   "priceRM": zod.number().min(listBusinessesResponseBrandKitProductsItemPriceRMMin)
-})).min(1).max(listBusinessesResponseBrandKitProductsMax),
-  "targetCustomers": zod.string().min(1).max(listBusinessesResponseBrandKitTargetCustomersMax),
+})).min(listBusinessesResponseBrandKitProductsMin).max(listBusinessesResponseBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(listBusinessesResponseBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(listBusinessesResponseBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(listBusinessesResponseBrandKitMenuItemsItemPriceRMExclusiveMin).max(listBusinessesResponseBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(listBusinessesResponseBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(listBusinessesResponseBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(listBusinessesResponseBrandKitTargetCustomersMin).max(listBusinessesResponseBrandKitTargetCustomersMax),
   "delivery": zod.boolean(),
   "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
   "language": zod.enum(['bm', 'en', 'both']),
   "neverSay": zod.array(zod.string().min(1).max(listBusinessesResponseBrandKitNeverSayItemMax)).max(listBusinessesResponseBrandKitNeverSayMax),
   "monthlyAdBudgetCapRM": zod.number().min(listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMin).max(listBusinessesResponseBrandKitMonthlyAdBudgetCapRMMax),
-  "approverUserId": zod.enum(['u2']),
-  "baselineWeeklySalesRM": zod.number().min(listBusinessesResponseBrandKitBaselineWeeklySalesRMMin),
-  "lastBadWeatherDipPct": zod.number().min(listBusinessesResponseBrandKitLastBadWeatherDipPctMin).max(listBusinessesResponseBrandKitLastBadWeatherDipPctMax)
+  "approverUserId": zod.string().min(1).max(listBusinessesResponseBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(listBusinessesResponseBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(listBusinessesResponseBrandKitLastBadWeatherDipPctMin).max(listBusinessesResponseBrandKitLastBadWeatherDipPctMax).optional()
 })
 })
 export const ListBusinessesResponse = zod.array(ListBusinessesResponseItem)
+
+
+/**
+ * @summary Create an owner and an empty business for onboarding
+ */
+export const signupOwnerBodyNameMax = 150;
+
+export const signupOwnerBodyBusinessNameMax = 150;
+
+export const signupOwnerBodyEmailMin = 3;
+export const signupOwnerBodyEmailMax = 200;
+
+
+
+export const SignupOwnerBody = zod.object({
+  "name": zod.string().min(1).max(signupOwnerBodyNameMax),
+  "businessName": zod.string().min(1).max(signupOwnerBodyBusinessNameMax),
+  "email": zod.string().min(signupOwnerBodyEmailMin).max(signupOwnerBodyEmailMax)
+})
+
+export const signupOwnerResponseBusinessOnboardingStepMin = 0;
+export const signupOwnerResponseBusinessOnboardingStepMax = 8;
+
+export const signupOwnerResponseBusinessTeamMembersItemIdMax = 80;
+
+export const signupOwnerResponseBusinessTeamMembersItemNameMax = 150;
+
+export const signupOwnerResponseBusinessTeamMembersItemEmailMin = 3;
+export const signupOwnerResponseBusinessTeamMembersItemEmailMax = 200;
+
+export const signupOwnerResponseBusinessTeamMembersMax = 30;
+
+export const signupOwnerResponseBusinessBrandKitLogoDataUrlMax = 2796250;
+
+export const signupOwnerResponseBusinessBrandKitPastPosterDataUrlMax = 2796250;
+
+export const signupOwnerResponseBusinessBrandKitBrandColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const signupOwnerResponseBusinessBrandKitBrandColoursMax = 3;
+
+export const signupOwnerResponseBusinessBrandKitPosterColoursItemRegExp = new RegExp('^#[0-9A-Fa-f]{6}$');
+export const signupOwnerResponseBusinessBrandKitPosterColoursMax = 5;
+
+export const signupOwnerResponseBusinessBrandKitPosterDescriptionMax = 2000;
+
+export const signupOwnerResponseBusinessBrandKitPosterStyleSummaryMax = 3000;
+
+export const signupOwnerResponseBusinessBrandKitWebsiteUrlMax = 2000;
+
+export const signupOwnerResponseBusinessBrandKitWebsiteVoiceSummaryMax = 3000;
+
+export const signupOwnerResponseBusinessBrandKitDescriptionMax = 200;
+
+export const signupOwnerResponseBusinessBrandKitEthosMin = 0;
+export const signupOwnerResponseBusinessBrandKitEthosMax = 2000;
+
+export const signupOwnerResponseBusinessBrandKitToneChipsItemMax = 80;
+
+export const signupOwnerResponseBusinessBrandKitToneChipsMax = 20;
+
+export const signupOwnerResponseBusinessBrandKitProductsItemNameMax = 150;
+
+export const signupOwnerResponseBusinessBrandKitProductsItemPriceRMMin = 0;
+
+export const signupOwnerResponseBusinessBrandKitProductsMin = 0;
+export const signupOwnerResponseBusinessBrandKitProductsMax = 100;
+
+export const signupOwnerResponseBusinessBrandKitMenuItemsItemIdMax = 80;
+
+export const signupOwnerResponseBusinessBrandKitMenuItemsItemNameMax = 150;
+
+export const signupOwnerResponseBusinessBrandKitMenuItemsItemPriceRMExclusiveMin = 0;
+export const signupOwnerResponseBusinessBrandKitMenuItemsItemPriceRMMax = 1000000;
+
+export const signupOwnerResponseBusinessBrandKitMenuItemsItemImageDataUrlMax = 2796250;
+
+export const signupOwnerResponseBusinessBrandKitMenuItemsMax = 15;
+
+export const signupOwnerResponseBusinessBrandKitTargetCustomersMin = 0;
+export const signupOwnerResponseBusinessBrandKitTargetCustomersMax = 2000;
+
+export const signupOwnerResponseBusinessBrandKitNeverSayItemMax = 100;
+
+export const signupOwnerResponseBusinessBrandKitNeverSayMax = 100;
+
+export const signupOwnerResponseBusinessBrandKitMonthlyAdBudgetCapRMMin = 0;
+export const signupOwnerResponseBusinessBrandKitMonthlyAdBudgetCapRMMax = 1000000;
+
+export const signupOwnerResponseBusinessBrandKitApproverUserIdMax = 80;
+
+export const signupOwnerResponseBusinessBrandKitBaselineWeeklySalesRMMin = 0;
+
+export const signupOwnerResponseBusinessBrandKitLastBadWeatherDipPctMin = 0;
+export const signupOwnerResponseBusinessBrandKitLastBadWeatherDipPctMax = 100;
+
+
+
+export const SignupOwnerResponse = zod.object({
+  "user": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['owner', 'staff']),
+  "email": zod.string().optional()
+}),
+  "business": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "type": zod.enum(['cafe', 'laundromat', 'retail', 'salon', 'other']),
+  "onboardingCompleted": zod.boolean().optional(),
+  "onboardingStep": zod.number().int().min(signupOwnerResponseBusinessOnboardingStepMin).max(signupOwnerResponseBusinessOnboardingStepMax).optional(),
+  "teamMembers": zod.array(zod.object({
+  "id": zod.string().min(1).max(signupOwnerResponseBusinessTeamMembersItemIdMax),
+  "name": zod.string().min(1).max(signupOwnerResponseBusinessTeamMembersItemNameMax),
+  "email": zod.string().min(signupOwnerResponseBusinessTeamMembersItemEmailMin).max(signupOwnerResponseBusinessTeamMembersItemEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})).max(signupOwnerResponseBusinessTeamMembersMax).optional(),
+  "city": zod.string(),
+  "lat": zod.number(),
+  "lon": zod.number(),
+  "socialPages": zod.object({
+  "facebookPageId": zod.string(),
+  "instagramHandle": zod.string()
+}),
+  "brandKit": zod.object({
+  "logoPath": zod.string().optional(),
+  "logoDataUrl": zod.string().max(signupOwnerResponseBusinessBrandKitLogoDataUrlMax).optional(),
+  "pastPosterDataUrl": zod.string().max(signupOwnerResponseBusinessBrandKitPastPosterDataUrlMax).optional(),
+  "pastPosterPath": zod.string().optional(),
+  "brandColours": zod.array(zod.string().regex(signupOwnerResponseBusinessBrandKitBrandColoursItemRegExp)).min(1).max(signupOwnerResponseBusinessBrandKitBrandColoursMax),
+  "posterPath": zod.string().optional(),
+  "posterColours": zod.array(zod.string().regex(signupOwnerResponseBusinessBrandKitPosterColoursItemRegExp)).max(signupOwnerResponseBusinessBrandKitPosterColoursMax).optional(),
+  "posterDescription": zod.string().max(signupOwnerResponseBusinessBrandKitPosterDescriptionMax).optional(),
+  "posterStyleSummary": zod.string().max(signupOwnerResponseBusinessBrandKitPosterStyleSummaryMax).optional(),
+  "websiteUrl": zod.string().max(signupOwnerResponseBusinessBrandKitWebsiteUrlMax).optional(),
+  "websiteVoiceSummary": zod.string().max(signupOwnerResponseBusinessBrandKitWebsiteVoiceSummaryMax).optional(),
+  "description": zod.string().max(signupOwnerResponseBusinessBrandKitDescriptionMax).optional(),
+  "takeaway": zod.boolean().optional(),
+  "ethos": zod.string().min(signupOwnerResponseBusinessBrandKitEthosMin).max(signupOwnerResponseBusinessBrandKitEthosMax),
+  "toneChips": zod.array(zod.string().min(1).max(signupOwnerResponseBusinessBrandKitToneChipsItemMax)).max(signupOwnerResponseBusinessBrandKitToneChipsMax),
+  "products": zod.array(zod.object({
+  "name": zod.string().min(1).max(signupOwnerResponseBusinessBrandKitProductsItemNameMax),
+  "priceRM": zod.number().min(signupOwnerResponseBusinessBrandKitProductsItemPriceRMMin)
+})).min(signupOwnerResponseBusinessBrandKitProductsMin).max(signupOwnerResponseBusinessBrandKitProductsMax),
+  "menuItems": zod.array(zod.object({
+  "id": zod.string().min(1).max(signupOwnerResponseBusinessBrandKitMenuItemsItemIdMax),
+  "name": zod.string().min(1).max(signupOwnerResponseBusinessBrandKitMenuItemsItemNameMax),
+  "priceRM": zod.number().gt(signupOwnerResponseBusinessBrandKitMenuItemsItemPriceRMExclusiveMin).max(signupOwnerResponseBusinessBrandKitMenuItemsItemPriceRMMax),
+  "imageDataUrl": zod.string().max(signupOwnerResponseBusinessBrandKitMenuItemsItemImageDataUrlMax).optional(),
+  "bestseller": zod.boolean().optional()
+})).max(signupOwnerResponseBusinessBrandKitMenuItemsMax).optional(),
+  "targetCustomers": zod.string().min(signupOwnerResponseBusinessBrandKitTargetCustomersMin).max(signupOwnerResponseBusinessBrandKitTargetCustomersMax),
+  "delivery": zod.boolean(),
+  "channels": zod.array(zod.enum(['facebook', 'instagram', 'whatsapp', 'tiktok'])),
+  "language": zod.enum(['bm', 'en', 'both']),
+  "neverSay": zod.array(zod.string().min(1).max(signupOwnerResponseBusinessBrandKitNeverSayItemMax)).max(signupOwnerResponseBusinessBrandKitNeverSayMax),
+  "monthlyAdBudgetCapRM": zod.number().min(signupOwnerResponseBusinessBrandKitMonthlyAdBudgetCapRMMin).max(signupOwnerResponseBusinessBrandKitMonthlyAdBudgetCapRMMax),
+  "approverUserId": zod.string().min(1).max(signupOwnerResponseBusinessBrandKitApproverUserIdMax),
+  "baselineWeeklySalesRM": zod.number().min(signupOwnerResponseBusinessBrandKitBaselineWeeklySalesRMMin).optional(),
+  "lastBadWeatherDipPct": zod.number().min(signupOwnerResponseBusinessBrandKitLastBadWeatherDipPctMin).max(signupOwnerResponseBusinessBrandKitLastBadWeatherDipPctMax).optional()
+})
+})
+})
+
+
+export const AddTeamMemberParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const addTeamMemberBodyNameMax = 150;
+
+export const addTeamMemberBodyEmailMin = 3;
+export const addTeamMemberBodyEmailMax = 200;
+
+
+
+export const AddTeamMemberBody = zod.object({
+  "name": zod.string().min(1).max(addTeamMemberBodyNameMax),
+  "email": zod.string().min(addTeamMemberBodyEmailMin).max(addTeamMemberBodyEmailMax),
+  "role": zod.enum(['owner', 'staff'])
+})
+
+export const addTeamMemberResponseIdMax = 80;
+
+export const addTeamMemberResponseNameMax = 150;
+
+export const addTeamMemberResponseEmailMin = 3;
+export const addTeamMemberResponseEmailMax = 200;
+
+
+
+export const AddTeamMemberResponseItem = zod.object({
+  "id": zod.string().min(1).max(addTeamMemberResponseIdMax),
+  "name": zod.string().min(1).max(addTeamMemberResponseNameMax),
+  "email": zod.string().min(addTeamMemberResponseEmailMin).max(addTeamMemberResponseEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})
+export const AddTeamMemberResponse = zod.array(AddTeamMemberResponseItem)
+
+
+export const RemoveTeamMemberParams = zod.object({
+  "id": zod.coerce.string(),
+  "memberId": zod.coerce.string()
+})
+
+export const removeTeamMemberResponseIdMax = 80;
+
+export const removeTeamMemberResponseNameMax = 150;
+
+export const removeTeamMemberResponseEmailMin = 3;
+export const removeTeamMemberResponseEmailMax = 200;
+
+
+
+export const RemoveTeamMemberResponseItem = zod.object({
+  "id": zod.string().min(1).max(removeTeamMemberResponseIdMax),
+  "name": zod.string().min(1).max(removeTeamMemberResponseNameMax),
+  "email": zod.string().min(removeTeamMemberResponseEmailMin).max(removeTeamMemberResponseEmailMax),
+  "role": zod.enum(['owner', 'staff']),
+  "invited": zod.boolean()
+})
+export const RemoveTeamMemberResponse = zod.array(RemoveTeamMemberResponseItem)
 
 
 /**

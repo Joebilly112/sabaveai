@@ -5,9 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { BrandKitApproverUserId } from './brandKitApproverUserId';
 import type { BrandKitChannelsItem } from './brandKitChannelsItem';
 import type { BrandKitLanguage } from './brandKitLanguage';
+import type { MenuItem } from './menuItem';
 import type { Product } from './product';
 
 export interface BrandKit {
@@ -37,8 +37,11 @@ export interface BrandKit {
   websiteUrl?: string;
   /** @maxLength 3000 */
   websiteVoiceSummary?: string;
+  /** @maxLength 200 */
+  description?: string;
+  takeaway?: boolean;
   /**
-     * @minLength 1
+     * @minLength 0
      * @maxLength 2000
      */
   ethos: string;
@@ -49,12 +52,14 @@ export interface BrandKit {
      */
   toneChips: string[];
   /**
-     * @minItems 1
+     * @minItems 0
      * @maxItems 100
      */
   products: Product[];
+  /** @maxItems 15 */
+  menuItems?: MenuItem[];
   /**
-     * @minLength 1
+     * @minLength 0
      * @maxLength 2000
      */
   targetCustomers: string;
@@ -72,12 +77,16 @@ export interface BrandKit {
      * @maximum 1000000
      */
   monthlyAdBudgetCapRM: number;
-  approverUserId: BrandKitApproverUserId;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  approverUserId: string;
   /** @minimum 0 */
-  baselineWeeklySalesRM: number;
+  baselineWeeklySalesRM?: number;
   /**
      * @minimum 0
      * @maximum 100
      */
-  lastBadWeatherDipPct: number;
+  lastBadWeatherDipPct?: number;
 }

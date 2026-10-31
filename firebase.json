@@ -1,0 +1,39 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "api",
+      "runtime": "nodejs22"
+    }
+  ],
+  "hosting": {
+    "site": "sabave",
+    "public": "artifacts/sabave-ai/dist/public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "/api/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-store" }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": {
+          "functionId": "api",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

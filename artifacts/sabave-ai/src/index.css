@@ -127,14 +127,15 @@
   padding: 0 clamp(20px, 5vw, 76px); border-bottom: 1px solid hsl(var(--border));
   background: hsl(45 55% 99% / .88); gap: 24px;
 }
-.brand-lockup { display: flex; align-items: center; gap: 12px; min-width: 190px; }
+.brand-lockup { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; min-width: 0; }
+a.brand-lockup { text-decoration: none; color: inherit; border-radius: 12px; }
 .brand-mark {
   width: 37px; height: 37px; border-radius: 12px 12px 12px 4px; background: hsl(var(--primary));
   color: hsl(var(--primary-foreground)); display: grid; place-items: center; font: 800 17px var(--app-font-display);
   letter-spacing: -1px; transform: rotate(-3deg);
 }
 .brand-name { font: 800 19px var(--app-font-display); letter-spacing: -1px; line-height: 1.05; }
-.brand-caption { color: hsl(var(--muted-foreground)); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; }
+.brand-caption { color: hsl(var(--muted-foreground)); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-top: 0; }
 .topbar-right { display: flex; align-items: center; gap: 20px; }
 .nav-links { display: flex; gap: 5px; }
 .nav-item { border: 0; background: transparent; color: hsl(var(--muted-foreground)); padding: 10px 13px; border-radius: 9px; font-size: 13px; font-weight: 600; }
@@ -222,8 +223,8 @@
 .retry-btn { border: 0; border-radius: 8px; padding: 8px 11px; background: hsl(2 54% 42%); color: white; font-size: 11px; font-weight: 700; }
 .empty-state { padding: 55px 20px; text-align: center; color: hsl(var(--muted-foreground)); }
 .empty-state strong { display: block; color: hsl(var(--foreground)); font: 700 15px var(--app-font-display); margin-bottom: 5px; }
-.footer-line { display: flex; justify-content: space-between; align-items: center; margin-top: 31px; color: hsl(var(--muted-foreground)); font-size: 10px; }
-.footer-brand { font: 700 10px var(--app-font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.footer-line { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 0; border: 0; background: transparent; color: hsl(var(--muted-foreground)); font-size: 10px; }
+.footer-brand { display: inline-flex; align-items: center; gap: 8px; font: 700 10px var(--app-font-mono); letter-spacing: .08em; text-transform: uppercase; }
 
 @media (max-width: 900px) {
   .topbar { padding-inline: 22px; flex-wrap: wrap; padding-block: 13px; }
@@ -358,7 +359,13 @@ a.nav-item { text-decoration: none; display: inline-block; }
 .never-warn { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: hsl(16 60% 38%); background: hsl(22 80% 95%); border-radius: 8px; padding: 6px 9px; margin-top: -4px; }
 .rationale { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: hsl(var(--muted-foreground)); }
 .rationale span { display: block; font: 700 9px var(--app-font-mono); letter-spacing: .1em; text-transform: uppercase; color: hsl(var(--primary)); margin-bottom: 3px; }
-.poster { position: sticky; top: 16px; margin: 0; aspect-ratio: 1; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 14px 30px hsl(186 32% 20% / .18); }
+.poster { position: sticky; top: 16px; margin: 0; aspect-ratio: 4 / 5; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 14px 30px hsl(186 32% 20% / .18); }
+.poster-stage { position: relative; display: flex; align-items: flex-end; gap: 10px; min-height: 112px; margin-top: 12px; }
+.poster-art { flex: 1; min-width: 0; }
+.poster-art svg { width: 100%; height: 112px; display: block; }
+.poster-photo { width: 72px; height: 72px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,.7); background: rgba(255,255,255,.85); }
+.poster-product { position: relative; margin: 12px 0 0; font: 800 22px/1.1 var(--app-font-display); letter-spacing: -.03em; }
+.poster-weather { margin-left: auto; font: 700 10px var(--app-font-sans); letter-spacing: .08em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 999px; padding: 3px 8px; }
 .poster-band { position: absolute; right: -40px; top: -40px; width: 140px; height: 140px; border-radius: 50%; opacity: .85; }
 .poster-top { position: relative; display: flex; align-items: center; gap: 8px; font: 700 11px var(--app-font-display); }
 .poster-logo { width: 30px; height: 30px; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,.85); padding: 3px; }
@@ -626,6 +633,9 @@ html.theme-night body {
 .globe-stage canvas {
   pointer-events: none;
   filter: brightness(0.46) contrast(1.24) saturate(0.58);
+}
+.globe-stage-closeup canvas {
+  filter: brightness(0.72) contrast(1.12) saturate(0.78);
 }
 @media (prefers-reduced-motion: reduce) {
   .theme-night,

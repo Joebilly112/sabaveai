@@ -13,19 +13,38 @@ export function validateImage(value: string | undefined) {
     : bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP";
   if (!valid) throw new Error("The image content does not match its file type.");
 }
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function assertEmail(email: string) {
+  if (!EMAIL.test(email.trim())) throw new Error("Enter a valid email address.");
+}
+
 export function parseBusiness(value: unknown) {
   const parsed = CreateBusinessBody.parse(value);
-  if (!parsed.name.trim() || !parsed.city.trim() || !parsed.brandKit.ethos.trim() ||
-    !parsed.brandKit.targetCustomers.trim() || parsed.brandKit.products.some(product => !product.name.trim())) {
+  const kit = parsed.brandKit;
+  if (kit.menuItems && kit.menuItems.length > 0) {
+    for (const item of kit.menuItems) {
+      if (!item.name.trim() || !(item.priceRM > 0)) throw new Error("Each menu item needs a name and a price above RM 0.");
+      validateImage(item.imageDataUrl);
+    }
+    kit.products = kit.menuItems.map((item) => ({ name: item.name.trim(), priceRM: item.priceRM }));
+  }
+  const drafting = parsed.onboardingCompleted === false;
+  if (!parsed.name.trim()) throw new Error("Business name cannot be blank.");
+  if (!drafting && (!parsed.city.trim() || !kit.ethos.trim() || !kit.targetCustomers.trim()
+    || kit.products.length === 0 || kit.products.some((product) => !product.name.trim()))) {
     throw new Error("Business name, city, ethos, customers and product names cannot be blank.");
   }
-  validateImage(parsed.brandKit.logoDataUrl);
-  validateImage(parsed.brandKit.pastPosterDataUrl);
-  if (parsed.brandKit.websiteUrl) {
-    const url = new URL(parsed.brandKit.websiteUrl);
+  validateImage(kit.logoDataUrl);
+  validateImage(kit.pastPosterDataUrl);
+  if (kit.websiteUrl) {
+    const url = new URL(kit.websiteUrl);
     if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) throw new Error("Use a valid public HTTP or HTTPS website URL.");
   }
+  if (parsed.teamMembers) {
+    for (const member of parsed.teamMembers) assertEmail(member.email);
+  }
   // Seed file paths are server-owned. A form cannot point images at arbitrary URLs.
-  const { logoPath: _logo, posterPath: _poster, pastPosterPath: _past, ...kit } = parsed.brandKit;
-  return { ...parsed, brandKit: kit as BrandKit };
+  const { logoPath: _logo, posterPath: _poster, pastPosterPath: _past, ...rest } = kit;
+  return { ...parsed, brandKit: rest as BrandKit };
 }

@@ -12,8 +12,37 @@ export const BusinessInputType = {
   cafe: 'cafe',
   laundromat: 'laundromat',
   retail: 'retail',
+  salon: 'salon',
   other: 'other',
 } as const;
+
+export type TeamMemberRole = typeof TeamMemberRole[keyof typeof TeamMemberRole];
+
+
+export const TeamMemberRole = {
+  owner: 'owner',
+  staff: 'staff',
+} as const;
+
+export interface TeamMember {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  id: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  /**
+     * @minLength 3
+     * @maxLength 200
+     */
+  email: string;
+  role: TeamMemberRole;
+  invited: boolean;
+}
 
 export interface Product {
   /**
@@ -23,6 +52,27 @@ export interface Product {
   name: string;
   /** @minimum 0 */
   priceRM: number;
+}
+
+export interface MenuItem {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  id: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  /**
+     * @maximum 1000000
+     * @exclusiveMinimum 0
+     */
+  priceRM: number;
+  /** @maxLength 2796250 */
+  imageDataUrl?: string;
+  bestseller?: boolean;
 }
 
 export type BrandKitChannelsItem = typeof BrandKitChannelsItem[keyof typeof BrandKitChannelsItem];
@@ -42,13 +92,6 @@ export const BrandKitLanguage = {
   bm: 'bm',
   en: 'en',
   both: 'both',
-} as const;
-
-export type BrandKitApproverUserId = typeof BrandKitApproverUserId[keyof typeof BrandKitApproverUserId];
-
-
-export const BrandKitApproverUserId = {
-  u2: 'u2',
 } as const;
 
 export interface BrandKit {
@@ -78,8 +121,11 @@ export interface BrandKit {
   websiteUrl?: string;
   /** @maxLength 3000 */
   websiteVoiceSummary?: string;
+  /** @maxLength 200 */
+  description?: string;
+  takeaway?: boolean;
   /**
-     * @minLength 1
+     * @minLength 0
      * @maxLength 2000
      */
   ethos: string;
@@ -90,12 +136,14 @@ export interface BrandKit {
      */
   toneChips: string[];
   /**
-     * @minItems 1
+     * @minItems 0
      * @maxItems 100
      */
   products: Product[];
+  /** @maxItems 15 */
+  menuItems?: MenuItem[];
   /**
-     * @minLength 1
+     * @minLength 0
      * @maxLength 2000
      */
   targetCustomers: string;
@@ -113,14 +161,18 @@ export interface BrandKit {
      * @maximum 1000000
      */
   monthlyAdBudgetCapRM: number;
-  approverUserId: BrandKitApproverUserId;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  approverUserId: string;
   /** @minimum 0 */
-  baselineWeeklySalesRM: number;
+  baselineWeeklySalesRM?: number;
   /**
      * @minimum 0
      * @maximum 100
      */
-  lastBadWeatherDipPct: number;
+  lastBadWeatherDipPct?: number;
 }
 
 export interface BusinessInput {
@@ -131,7 +183,7 @@ export interface BusinessInput {
   name: string;
   type: BusinessInputType;
   /**
-     * @minLength 1
+     * @minLength 0
      * @maxLength 150
      */
   city: string;
@@ -145,6 +197,14 @@ export interface BusinessInput {
      * @maximum 180
      */
   lon: number;
+  onboardingCompleted?: boolean;
+  /**
+     * @minimum 0
+     * @maximum 8
+     */
+  onboardingStep?: number;
+  /** @maxItems 30 */
+  teamMembers?: TeamMember[];
   brandKit: BrandKit;
 }
 
@@ -471,6 +531,7 @@ export const BusinessType = {
   cafe: 'cafe',
   laundromat: 'laundromat',
   retail: 'retail',
+  salon: 'salon',
   other: 'other',
 } as const;
 
@@ -483,11 +544,79 @@ export interface Business {
   id: string;
   name: string;
   type: BusinessType;
+  onboardingCompleted?: boolean;
+  /**
+     * @minimum 0
+     * @maximum 8
+     */
+  onboardingStep?: number;
+  /** @maxItems 30 */
+  teamMembers?: TeamMember[];
   city: string;
   lat: number;
   lon: number;
   socialPages: SocialPages;
   brandKit: BrandKit;
+}
+
+export type TeamMemberInputRole = typeof TeamMemberInputRole[keyof typeof TeamMemberInputRole];
+
+
+export const TeamMemberInputRole = {
+  owner: 'owner',
+  staff: 'staff',
+} as const;
+
+export interface TeamMemberInput {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  /**
+     * @minLength 3
+     * @maxLength 200
+     */
+  email: string;
+  role: TeamMemberInputRole;
+}
+
+export interface SignupInput {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  name: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  businessName: string;
+  /**
+     * @minLength 3
+     * @maxLength 200
+     */
+  email: string;
+}
+
+export type SignupUserRole = typeof SignupUserRole[keyof typeof SignupUserRole];
+
+
+export const SignupUserRole = {
+  owner: 'owner',
+  staff: 'staff',
+} as const;
+
+export interface SignupUser {
+  id: string;
+  name: string;
+  role: SignupUserRole;
+  email?: string;
+}
+
+export interface SignupResult {
+  user: SignupUser;
+  business: Business;
 }
 
 export type GetAIStatus200 = {

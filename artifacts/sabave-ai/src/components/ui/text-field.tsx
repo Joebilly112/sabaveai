@@ -16,7 +16,7 @@ export function TextField({ id, label, hint, error, className, ...props }: TextF
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-1.5">
       <Label htmlFor={id} className="text-sm font-medium text-ds-ink">{label}</Label>
       <Input
         id={id}

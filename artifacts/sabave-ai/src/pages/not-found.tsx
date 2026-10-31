@@ -16,7 +16,7 @@ export default function NotFound() {
         />
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/" className={buttonVariants({ variant: 'brand', size: 'touch' })}>Back home</Link>
-          <Link href="/app" className={buttonVariants({ variant: 'quiet', size: 'touch' })}>Open workspace</Link>
+          <Link href="/login" className={buttonVariants({ variant: 'quiet', size: 'touch' })}>Log in</Link>
         </div>
       </section>
     </PublicLayout>

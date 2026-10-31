@@ -1,4 +1,5 @@
 import type { SignalDay } from '@workspace/api-client-react';
+import { asArray } from '@/lib/as-array';
 
 /** Cutoffs from artifacts/api-server/src/signals/hazeSignal.ts levelFor. */
 export const SEVERITY_COLORS = ['#2BB673', '#E0A82E', '#F08A3C', '#E0563F'] as const;
@@ -40,12 +41,13 @@ export function formatStamp(iso?: string) {
   return new Intl.DateTimeFormat('en-MY', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(value);
 }
 
-export function peakDay(days: SignalDay[], peakDate?: string) {
+export function peakDay(days: SignalDay[] | unknown, peakDate?: string) {
+  const list = asArray<SignalDay>(days);
   if (peakDate) {
-    const match = days.find((day) => day.date.slice(0, 10) === peakDate.slice(0, 10));
+    const match = list.find((day) => typeof day?.date === 'string' && day.date.slice(0, 10) === peakDate.slice(0, 10));
     if (match) return match;
   }
-  return days.reduce<SignalDay | undefined>((best, day) => {
+  return list.reduce<SignalDay | undefined>((best, day) => {
     if (!best) return day;
     if (day.level > best.level || (day.level === best.level && day.value > best.value)) return day;
     return best;

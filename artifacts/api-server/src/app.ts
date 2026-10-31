@@ -26,8 +26,12 @@ app.use(
   }),
 );
 app.use(cors());
-// Two images up to 2 MB each, base64 encoded, plus business-level form fields.
-app.use(express.json({ limit: "6mb" }));
+app.use("/api", (_req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
+// Logo, past poster, and up to 15 menu photos, each at most 2 MB once decoded.
+app.use(express.json({ limit: "48mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);

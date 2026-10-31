@@ -4,7 +4,6 @@ import { Check, RefreshCw, Sparkles } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   getListActivityLogQueryKey,
-  getListBusinessesQueryKey,
   getListDraftsQueryKey,
   useGenerateDraft,
   useGetAIStatus,
@@ -13,7 +12,7 @@ import {
   useListDrafts,
   useTriggerSignal,
 } from '@workspace/api-client-react';
-import type { CampaignDraft, LogEntry, TriggerResult } from '@workspace/api-client-react';
+import type { Business, CampaignDraft, LogEntry, TriggerResult } from '@workspace/api-client-react';
 import { OptionCard } from '@/components/OptionCard';
 import { AppHeader } from '@/components/AppHeader';
 import { SabaveLogo } from '@/components/SabaveLogo';
@@ -21,6 +20,8 @@ import { CampaignStudio } from '@/components/CampaignStudio';
 import { ForecastStrip } from '@/components/dashboard/forecast-strip';
 import { WeatherMap } from '@/components/dashboard/weather-map';
 import { formatDay, formatStamp, malaysiaToday, peakDay, scrollToSection } from '@/components/dashboard/format';
+import { asArray } from '@/lib/as-array';
+import { listBusinessesQuery } from '@/lib/session-api';
 import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
 
 type ForecastAction = 'check' | 'simulate';
@@ -40,11 +41,13 @@ function detailString(details: LogEntry['details'], key: string) {
 }
 
 function averageAlertToPublishMinutes(logs: LogEntry[], drafts: CampaignDraft[]) {
+  const logEntries = asArray<LogEntry>(logs);
+  const draftList = asArray<CampaignDraft>(drafts);
   const samples: number[] = [];
-  for (const draft of drafts) {
+  for (const draft of draftList) {
     if (draft.status !== 'published') continue;
-    const publishedAt = Date.parse(logs.find((entry) => entry.action === 'PUBLISHED' && detailString(entry.details, 'draftId') === draft.id)?.timestamp ?? '');
-    const alertAt = Date.parse(logs.find((entry) => entry.action === 'ALERT_TRIGGERED' && detailString(entry.details, 'alertId') === draft.alertId)?.timestamp ?? '');
+    const publishedAt = Date.parse(logEntries.find((entry) => entry.action === 'PUBLISHED' && detailString(entry.details, 'draftId') === draft.id)?.timestamp ?? '');
+    const alertAt = Date.parse(logEntries.find((entry) => entry.action === 'ALERT_TRIGGERED' && detailString(entry.details, 'alertId') === draft.alertId)?.timestamp ?? '');
     if (!Number.isFinite(publishedAt) || !Number.isFinite(alertAt)) continue;
     const minutes = (publishedAt - alertAt) / 60000;
     if (minutes >= 0) samples.push(minutes);
@@ -71,9 +74,9 @@ function journeyProgress(phase: JourneyPhase) {
 }
 
 export default function Dashboard() {
-  const businessesQuery = useListBusinesses({ query: { queryKey: getListBusinessesQueryKey() } });
-  const businesses = businessesQuery.data || [];
   const { businessId: selectedId, setBusinessId, role, userId, confirmLeave } = useWorkspace();
+  const businessesQuery = useListBusinesses(listBusinessesQuery(userId));
+  const businesses = asArray<Business>(businessesQuery.data).filter((business) => business.onboardingCompleted !== false);
   const queryClient = useQueryClient();
   const [draftId, setDraftId] = useState('');
   const [preparing, setPreparing] = useState('');
@@ -82,10 +85,10 @@ export default function Dashboard() {
   const [result, setResult] = useState<TriggerResult | null>(null);
   const [triggerError, setTriggerError] = useState(false);
   const [todayLevel, setTodayLevel] = useState<Record<string, number>>({});
-  const selectedBusiness = useMemo(
-    () => businesses.find((business) => business.id === selectedId) || businesses[0],
-    [businesses, selectedId],
-  );
+  const selectedBusiness = useMemo(() => {
+    const list = asArray<Business>(businesses);
+    return list.find((business) => business.id === selectedId) || list[0];
+  }, [businesses, selectedId]);
   const businessId = selectedBusiness?.id || '';
   const journeyDraftsQuery = useListDrafts(
     { businessId },
@@ -99,7 +102,7 @@ export default function Dashboard() {
     query: { queryKey: getListActivityLogQueryKey(logParams), enabled: !!businessId, refetchInterval: 5000, staleTime: 0 },
     request: { headers: { 'x-user-id': userId } },
   });
-  const businessDrafts = journeyDraftsQuery.data || [];
+  const businessDrafts = asArray<CampaignDraft>(journeyDraftsQuery.data);
   const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': userId } } });
   const generate = useGenerateDraft({ request: { headers: { 'x-user-id': userId } } });
   const aiStatus = useGetAIStatus();
@@ -154,7 +157,7 @@ export default function Dashboard() {
     if (businessId) void runForecast('check');
   }, [businessId, runForecast]);
 
-  const forecast = result && result.forecast.businessId === businessId ? result.forecast : undefined;
+  const forecast = result && typeof result === 'object' && result.forecast?.businessId === businessId ? result.forecast : undefined;
   const alert = forecast && result?.alert ? result.alert : null;
   const isFetching = requestedAction !== null;
   const isLoadingBusinesses = businessesQuery.isLoading;
@@ -175,15 +178,18 @@ export default function Dashboard() {
     : "You're viewing as Staff: you can draft, the Owner approves.";
   const salesDip = selectedBusiness?.brandKit?.lastBadWeatherDipPct;
   const showDip = typeof salesDip === 'number' && Number.isFinite(salesDip);
-  const peak = forecast ? peakDay(forecast.days, alert?.peakDate) : undefined;
+  const forecastDays = asArray(forecast?.days);
+  const campaignOptions = asArray(result && typeof result === 'object' ? result.options : undefined);
+  const peak = forecast ? peakDay(forecastDays, alert?.peakDate) : undefined;
   const publishedCount = businessDrafts.filter((draft) => draft.status === 'published').length;
-  const avgMinutes = averageAlertToPublishMinutes(activityQuery.data || [], businessDrafts);
+  const avgMinutes = averageAlertToPublishMinutes(asArray<LogEntry>(activityQuery.data), businessDrafts);
   const tone = publishedDraft ? 'published' : pendingDrafts.length ? 'pending' : alert?.peakLevelLabel === 'Very Unhealthy' ? 'severe' : alert ? 'alert' : 'clear';
 
   useEffect(() => {
-    if (!forecast?.days.length) return;
+    const days = asArray(forecast?.days);
+    if (!days.length || !forecast) return;
     const today = malaysiaToday();
-    const day = forecast.days.find((item) => item.date.slice(0, 10) === today) ?? forecast.days[0];
+    const day = days.find((item) => typeof item?.date === 'string' && item.date.slice(0, 10) === today) ?? days.find((item) => typeof item?.date === 'string');
     if (!day || !Number.isFinite(day.level)) return;
     setTodayLevel((prev) => (prev[forecast.businessId] === day.level ? prev : { ...prev, [forecast.businessId]: day.level }));
   }, [forecast]);
@@ -221,7 +227,7 @@ export default function Dashboard() {
     heroAction = role === 'owner' ? (
       <button type="button" className="action-btn primary" onClick={() => openDraft(pendingDrafts[0].id)} data-testid="button-open-approval">Open approval</button>
     ) : (
-      <p className="dash-wait">Waiting for Mr. Tan (Owner)</p>
+      <p className="dash-wait">Waiting for the owner</p>
     );
   } else if (editableDraft) {
     heroTitle = editableDraft.status === 'rejected' ? 'Campaign returned for changes' : 'Campaign draft ready to submit';
@@ -232,11 +238,11 @@ export default function Dashboard() {
       heroAction = <button type="button" className="action-btn primary" onClick={() => openDraft(editableDraft.id)} data-testid="button-open-draft">Open draft</button>;
     }
   } else if (alert) {
-    const first = alert.affectedDates[0];
+    const first = asArray(alert.affectedDates)[0];
     heroTitle = `${alert.peakLevelLabel} haze in ${city}${first ? ` from ${formatDay(first)}` : ''}`;
     if (peak && Number.isFinite(peak.value)) heroBody = `Peaks at ${peak.value} ${peak.unit} on ${formatDay(peak.date)}.`;
     else if (alert.peakDate) heroBody = `Peak day ${formatDay(alert.peakDate)}.`;
-    const count = result?.options.length ?? 0;
+    const count = campaignOptions.length;
     if (count > 0) {
       heroAction = (
         <button type="button" className="action-btn primary" onClick={() => scrollToSection('campaign-options')} data-testid="button-review-options">
@@ -281,7 +287,7 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {businessesQuery.isError && (
+        {(businessesQuery.isError || (businessesQuery.data != null && !Array.isArray(businessesQuery.data))) && (
           <div className="error-box" role="alert" data-testid="businesses-error">
             <span>We couldn’t load your businesses. Check your connection and try again.</span>
             <button type="button" className="retry-btn" onClick={() => businessesQuery.refetch()} data-testid="button-retry-businesses">Try again</button>
@@ -290,8 +296,10 @@ export default function Dashboard() {
 
         {noBusiness ? (
           <section className="dash-forecast empty-state" data-testid="businesses-empty">
-            <strong>No business data yet</strong>
-            The forecast will appear here once a business is available.
+            <strong>{role === 'staff' ? 'Waiting for the owner to finish setup' : 'No business data yet'}</strong>
+            {role === 'staff'
+              ? 'You will see their shop here after they submit it. No other shop is loaded.'
+              : 'The forecast will appear here once a business is available.'}
           </section>
         ) : (
           <div className="dash-stack">
@@ -369,9 +377,9 @@ export default function Dashboard() {
                     {aiStatus.isLoading ? 'Checking AI availability…' : aiConfigured ? `DeepSeek${aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''} · falls back to templates if it fails` : 'AI copy is unavailable: no DeepSeek API key is configured. Template copy will be used.'}
                   </span>
                 </div>
-                {result.options.length > 0 ? (
+                {campaignOptions.length > 0 ? (
                   <div className="options-grid">
-                    {result.options.map((option, index) => (
+                    {campaignOptions.map((option, index) => (
                       <OptionCard
                         option={option}
                         index={index}
@@ -390,7 +398,7 @@ export default function Dashboard() {
               </section>
             )}
 
-            {businessDrafts.length > 0 && <CampaignStudio key={businessId} business={selectedBusiness} selectedId={draftId} onSelect={setDraftId} />}
+            {businessDrafts.length > 0 && <CampaignStudio key={businessId} business={selectedBusiness} selectedId={draftId} onSelect={setDraftId} weatherLabel={alert?.peakLevelLabel} />}
 
             <section className="dash-stats" aria-label="Shop stats">
               <article className="dash-stat">

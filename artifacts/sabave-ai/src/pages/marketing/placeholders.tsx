@@ -15,25 +15,13 @@ function Shell({ title, documentTitle, lede, children }: { title: string; docume
         <PageHeader title={title} description={lede} />
         {children}
         <div className="mt-8">
-          <Link href="/app" className={buttonVariants({ variant: 'brand', size: 'touch' })} data-testid="link-open-workspace">
-            Open workspace
+          <Link href="/login" className={buttonVariants({ variant: 'brand', size: 'touch' })} data-testid="link-open-workspace">
+            Log in
           </Link>
         </div>
       </section>
     </PublicLayout>
   );
-}
-
-export function SolutionsPage() {
-  return <Shell title="One engine, every walk-in business." lede="Starting with food and beverage in the Klang Valley. Segment pages and weather signals come next." />;
-}
-
-export function LoginPage() {
-  return <Shell title="Log in to sabave.ai" lede="The sign-in screen is next. Until then, open the workspace and switch between Aisyah (Staff) and Mr. Tan (Owner)." />;
-}
-
-export function SignupPage() {
-  return <Shell title="Create your sabave.ai account" lede="Account creation is next. A new shop will land in onboarding once sign-up is connected." />;
 }
 
 export function DocsIndexPage() {

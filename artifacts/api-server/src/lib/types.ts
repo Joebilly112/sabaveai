@@ -1,6 +1,6 @@
 export type Role = "staff" | "owner";
 export type SignalId = "haze" | "rain";
-export type BusinessType = "cafe" | "laundromat" | "retail" | "other";
+export type BusinessType = "cafe" | "laundromat" | "retail" | "salon" | "other";
 export type Channel = "facebook" | "instagram" | "whatsapp" | "tiktok";
 export type Language = "bm" | "en" | "both";
 
@@ -8,11 +8,28 @@ export interface User {
   id: string;
   name: string;
   role: Role;
+  email?: string;
 }
 
 export interface Product {
   name: string;
   priceRM: number;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  priceRM: number;
+  imageDataUrl?: string;
+  bestseller?: boolean;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  invited: boolean;
 }
 
 export interface BrandKit {
@@ -26,18 +43,21 @@ export interface BrandKit {
   posterStyleSummary?: string;
   websiteUrl?: string;
   websiteVoiceSummary?: string;
+  description?: string;
   ethos: string;
   toneChips: string[];
   products: Product[];
+  menuItems?: MenuItem[];
   targetCustomers: string;
   delivery: boolean;
+  takeaway?: boolean;
   channels: Channel[];
   language: Language;
   neverSay: string[];
   monthlyAdBudgetCapRM: number;
   approverUserId: string;
-  baselineWeeklySalesRM: number;
-  lastBadWeatherDipPct: number;
+  baselineWeeklySalesRM?: number;
+  lastBadWeatherDipPct?: number;
 }
 
 export interface Business {
@@ -52,6 +72,9 @@ export interface Business {
     instagramHandle: string;
   };
   brandKit: BrandKit;
+  onboardingCompleted?: boolean;
+  onboardingStep?: number;
+  teamMembers?: TeamMember[];
 }
 
 export interface SignalDay {
@@ -104,6 +127,8 @@ export interface CampaignCopy {
   source: "ai" | "template";
   model?: string;
   fallbackReason?: string;
+  /** Sanitized SVG illustration for this alert and product. */
+  posterArt?: string;
 }
 
 export type DraftStatus =

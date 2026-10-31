@@ -8,11 +8,20 @@
 import type { BrandKit } from './brandKit';
 import type { BusinessType } from './businessType';
 import type { SocialPages } from './socialPages';
+import type { TeamMember } from './teamMember';
 
 export interface Business {
   id: string;
   name: string;
   type: BusinessType;
+  onboardingCompleted?: boolean;
+  /**
+     * @minimum 0
+     * @maximum 8
+     */
+  onboardingStep?: number;
+  /** @maxItems 30 */
+  teamMembers?: TeamMember[];
   city: string;
   lat: number;
   lon: number;

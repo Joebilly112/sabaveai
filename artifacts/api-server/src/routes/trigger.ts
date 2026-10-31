@@ -3,6 +3,7 @@ import { TriggerSignalBody, TriggerSignalResponse } from "@workspace/api-zod";
 import { findBusiness, getStore } from "../lib/store";
 import { getSignal } from "../signals/registry";
 import { getUserById } from "../lib/users";
+import { canAccessBusiness } from "../lib/access";
 import { appendLog } from "../lib/activityLog";
 import { evaluate } from "../lib/triggerEngine";
 import { campaignOptions } from "../lib/campaignRules";
@@ -14,14 +15,14 @@ router.post("/trigger", async (req, res) => {
     res.status(400).json({ error: "Provide businessId, signalId haze, and an optional boolean simulate." });
     return;
   }
-  const user = getUserById(req.header("x-user-id") ?? "u1");
+  const user = getUserById(req.header("x-user-id") ?? "");
   if (!user) {
     res.status(401).json({ error: "Unknown simulated user." });
     return;
   }
   const { businessId, signalId, simulate } = parsed.data;
   const business = findBusiness(businessId);
-  if (!business) {
+  if (!business || !canAccessBusiness(business, user)) {
     res.status(404).json({ error: "Business not found." });
     return;
   }

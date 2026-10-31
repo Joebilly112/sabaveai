@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
+import { SabaveLogo } from '@/components/SabaveLogo';
 import { buttonVariants } from '@/components/ui/button';
 import { primaryNav } from '@/lib/public-nav';
+import { useWorkspace } from '@/lib/workspace';
 import { cn } from '@/lib/utils';
 
 export function Navbar() {
-  const [location] = useLocation();
+  const { session, signOut } = useWorkspace();
+  const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -33,12 +36,9 @@ export function Navbar() {
   return (
     <header className={cn('nav-bar', scrolled && 'is-scrolled')}>
       <div className="mx-auto grid min-h-16 max-w-[1120px] grid-cols-[1fr_auto] items-center gap-3 px-4 lg:grid-cols-[1fr_auto_1fr] lg:px-8">
-        <Link href="/" className="flex min-h-11 w-fit items-center gap-2 rounded-xl pr-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-primary" data-testid="nav-logo">
-          <span aria-hidden className="grid size-9 -rotate-3 place-items-center rounded-xl rounded-br-sm bg-ds-primary font-display text-[15px] font-bold text-ds-logo-ink">s</span>
-          <span className="flex flex-col leading-none">
-            <span className="font-display text-lg font-semibold tracking-tight text-ds-ink">sabave.ai</span>
-            <span className="mt-1 text-[11px] text-ds-faint">an Orbyte module</span>
-          </span>
+        <Link href="/" className="flex min-h-11 w-fit flex-col justify-center rounded-xl pr-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-primary" data-testid="nav-logo">
+          <SabaveLogo height={36} />
+          <span className="mt-0.5 text-[11px] leading-none text-ds-faint">an Orbyte module</span>
         </Link>
         <nav className="hidden items-center justify-center gap-1 lg:flex" aria-label="Primary">
           {primaryNav.map((item) => {
@@ -59,9 +59,22 @@ export function Navbar() {
           })}
         </nav>
         <div className="flex items-center justify-end gap-2 lg:col-start-3">
-          <Link href="/login" className={cn(buttonVariants({ variant: 'quiet', size: 'touch' }), 'max-sm:hidden')} data-testid="nav-login">
-            Log in
-          </Link>
+          {session ? (
+            <button
+              type="button"
+              className={cn(buttonVariants({ variant: 'quiet', size: 'touch' }), 'max-sm:hidden')}
+              onClick={() => {
+                signOut();
+                navigate('/');
+              }}
+            >
+              Log out
+            </button>
+          ) : (
+            <Link href="/login" className={cn(buttonVariants({ variant: 'quiet', size: 'touch' }), 'max-sm:hidden')} data-testid="nav-login">
+              Log in
+            </Link>
+          )}
           <Link href="/signup" className={cn(buttonVariants({ variant: 'brand', size: 'touch' }), 'max-sm:hidden')} data-testid="nav-start">
             Start free
           </Link>
@@ -96,7 +109,20 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <Link href="/login" className={cn(buttonVariants({ variant: 'quiet', size: 'touch' }), 'mt-2 sm:hidden')}>Log in</Link>
+            {session ? (
+              <button
+                type="button"
+                className={cn(buttonVariants({ variant: 'quiet', size: 'touch' }), 'mt-2 sm:hidden')}
+                onClick={() => {
+                  signOut();
+                  navigate('/');
+                }}
+              >
+                Log out
+              </button>
+            ) : (
+              <Link href="/login" className={cn(buttonVariants({ variant: 'quiet', size: 'touch' }), 'mt-2 sm:hidden')}>Log in</Link>
+            )}
             <Link href="/signup" className={cn(buttonVariants({ variant: 'brand', size: 'touch' }), 'mt-2 sm:hidden')}>Start free</Link>
           </div>
         </nav>

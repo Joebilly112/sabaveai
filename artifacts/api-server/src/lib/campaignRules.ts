@@ -41,7 +41,7 @@ export function campaignOptions(
     retail: ["Order online, collect later", "Promote online ordering with click-and-collect.", "Customers can choose their outfit from home and collect when convenient."],
     other: ["Plan your order from home", "Promote advance orders for convenient collection.", "Advance orders help maintain sales when fewer customers walk in."],
   } as const;
-  const bundle = bundles[business.type];
+  const bundle = bundles[business.type === "salon" ? "other" : business.type];
   const familyOffer = business.type === "cafe"
     ? `Family pack: 2 × ${product.name} (${money(product.priceRM * 2)} → ${money(product.priceRM * 2 - discount)})`
     : offer;

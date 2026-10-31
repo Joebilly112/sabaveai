@@ -1,10 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getStore } from "./store";
+import { ensureSeededStore, getStore } from "./store";
 import { evaluate, malaysiaDate } from "./triggerEngine";
 import { campaignOptions, suggestedBudget } from "./campaignRules";
 import { hazeSignal } from "../signals/hazeSignal";
 import { users } from "./users";
+
+ensureSeededStore();
 
 test("simulated haze creates one alert and deterministic options, without duplicate log entries", () => {
   const state = getStore();
