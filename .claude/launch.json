@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--enable-source-maps", "artifacts/api-server/dist/index.mjs"],
+      "port": 8790,
+      "autoPort": false,
+      "env": { "PORT": "8790", "NODE_ENV": "development" }
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["artifacts/sabave-ai/node_modules/vite/bin/vite.js", "--config", "artifacts/sabave-ai/vite.config.ts", "--host", "127.0.0.1"],
+      "port": 5790,
+      "autoPort": false,
+      "env": { "PORT": "5790", "BASE_PATH": "/", "API_PORT": "8790" }
+    }
+  ]
+}
