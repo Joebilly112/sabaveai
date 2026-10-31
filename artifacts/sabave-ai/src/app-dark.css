@@ -1255,10 +1255,23 @@ html:has(.app-dark) [role="status"].group {
 .app-dark #campaign-options,
 .app-dark #draft-editor { scroll-margin-top: 88px; }
 
+.app-dark #campaign-options { margin-top: 36px; }
+.app-dark .dash .studio { margin-top: 40px; }
+.app-dark .dash .option-card { padding: 16px; }
+.app-dark .dash .option-offer {
+  margin: 10px 0 6px;
+  padding: 0;
+  background: transparent;
+  color: #F2EEE6;
+  font-size: 14px;
+}
+.app-dark .dash .option-desc { margin: 0 0 16px; flex: 1; }
+.app-dark .dash .editor-card .empty-state { padding: 32px 16px; }
 .app-dark .dash-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+  margin-top: 40px;
 }
 
 .app-dark .dash-stat {
@@ -1306,7 +1319,7 @@ html:has(.app-dark) [role="status"].group {
 }
 
 @media (max-width: 900px) {
-  .app-dark .dash-stats { grid-template-columns: 1fr 1fr; }
+  .app-dark .dash-stats { grid-template-columns: 1fr; }
   .app-dark .dash-reading strong { font-size: 22px; }
 }
 

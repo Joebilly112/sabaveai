@@ -1,4 +1,9 @@
+import { useState, type CSSProperties } from 'react';
+import { AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import type { Business } from '@workspace/api-client-react';
+import { HERO_MIN_EDGE, POSTER_DIRECTIONS, headlineFit, parseOffer, posterChecks, posterPalette, priceDigits, rm } from '@/components/posterDesign';
+import type { PosterDirection } from '@/components/posterDesign';
+import { ShortVideoTeaser } from '@/components/ShortVideoTeaser';
 
 type Tone = 'premium' | 'playful' | 'traditional' | 'default';
 const KEYWORDS: Record<Exclude<Tone, 'default'>, string[]> = {
@@ -23,68 +28,130 @@ export function posterTone(business?: Business): Tone {
   return best;
 }
 
-const ALLOWED_TAGS = new Set(['svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'line', 'polygon', 'polyline']);
-const ALLOWED_ATTR = /^(viewBox|fill|stroke|stroke-width|stroke-linecap|stroke-linejoin|d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|points|opacity)$/;
+const TONE_DIRECTION: Record<Tone, PosterDirection> = { premium: 'editorial', playful: 'bold', traditional: 'heritage', default: 'heritage' };
+const directionKey = (id?: string) => `sabave.posterDirection.${id || 'none'}`;
 
-function safePosterSvg(input: string): string {
-  const raw = input.trim();
-  if (raw.length < 20 || raw.length > 4000) return '';
-  if (/<script|foreignObject|<\s*image|<\s*use|<\s*text|<!|<\?|on[a-z]+\s*=|javascript:|href\s*=|url\s*\(|style\s*=|&#/i.test(raw)) return '';
-  const match = raw.match(/<svg\b[^>]*>[\s\S]*<\/svg>/i);
-  if (!match || !/viewBox\s*=\s*["']0 0 \d{2,3} \d{2,3}["']/.test(match[0])) return '';
-  const tags = [...match[0].matchAll(/<\/?\s*([a-zA-Z0-9]+)/g)].map((item) => item[1]!.toLowerCase());
-  if (!tags.length || tags.some((tag) => !ALLOWED_TAGS.has(tag))) return '';
-  const attrs = [...match[0].matchAll(/\s([a-zA-Z:-]+)\s*=/g)].map((item) => item[1]!);
-  if (attrs.some((attr) => attr !== 'xmlns' && !ALLOWED_ATTR.test(attr))) return '';
-  return match[0].replace(/\sxmlns="[^"]*"/g, '');
+function savedDirection(id?: string): PosterDirection | null {
+  try {
+    const value = window.localStorage.getItem(directionKey(id));
+    return POSTER_DIRECTIONS.some((item) => item.id === value) ? value as PosterDirection : null;
+  } catch { return null; }
+}
+
+function saveDirection(id: string | undefined, direction: PosterDirection) {
+  try { window.localStorage.setItem(directionKey(id), direction); } catch { /* the choice just lasts this session */ }
+}
+
+export function menuItemForOffer<T extends { name: string }>(offer: string, items: T[]): T | undefined {
+  const hay = offer.toLowerCase();
+  return items
+    .map((item) => ({ item, name: item.name.trim().toLowerCase() }))
+    .filter((row) => row.name.length > 1 && hay.includes(row.name))
+    .sort((a, b) => b.name.length - a.name.length)[0]?.item;
 }
 
 function productName(business: Business | undefined, offer: string): string {
-  const items = business?.brandKit?.products || [];
-  const named = items.find((item) => item.name && offer.toLowerCase().includes(item.name.toLowerCase()));
-  return named?.name || items[0]?.name || '';
+  const menu = business?.brandKit?.menuItems || [];
+  const products = business?.brandKit?.products || [];
+  return menuItemForOffer(offer, [...menu, ...products])?.name || products.find((item) => item.name)?.name || '';
 }
 
 export function PosterPreview({
-  business, headline, offer, cta, weatherLabel, posterArt, productImage,
+  business, headline, offer, cta, weatherLabel, productImage,
 }: {
   business?: Business;
   headline: string;
   offer: string;
   cta: string;
   weatherLabel?: string;
-  posterArt?: string;
   productImage?: string;
 }) {
   const kit = business?.brandKit as (Business['brandKit'] & { logoDataUrl?: string }) | undefined;
-  const colours = kit?.brandColours?.length ? kit.brandColours : ['#1f6b57', '#e8875d'];
-  const [c1, c2 = c1, c3 = '#fbf6ea'] = colours;
-  const tone = posterTone(business);
+  const isFood = business?.type === 'cafe';
+  const malay = kit?.language === 'bm';
+  const [picked, setPicked] = useState(() => savedDirection(business?.id));
+  const direction = picked ?? TONE_DIRECTION[posterTone(business)];
+  const palette = posterPalette(direction, kit?.brandColours?.length ? kit.brandColours : ['#FDE68A', '#92400E', '#FFF7D6'], isFood);
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const dataUrl = kit?.logoDataUrl && /^data:image\//.test(kit.logoDataUrl) ? kit.logoDataUrl : '';
   const logo = kit?.logoPath;
   const src = dataUrl || (logo ? (/^https?:/.test(logo) ? logo : `${base}/${logo.replace(/^\//, '')}`) : '');
-  const art = posterArt ? safePosterSvg(posterArt) : '';
   const name = productName(business, offer);
-  const weather = weatherLabel ? `${weatherLabel} haze` : 'Haze alert';
   const photo = productImage && /^data:image\/(?:png|jpeg|webp);/.test(productImage) ? productImage : '';
+  const [photoSize, setPhotoSize] = useState({ src: '', edge: 0 });
+  const photoEdge = photoSize.src === photo ? photoSize.edge : 0;
+  const image = !photo ? 'no-image' : photoEdge && photoEdge < HERO_MIN_EDGE ? 'has-inset' : 'has-hero';
+  const line = headline.trim() || name || 'Your headline here';
+  const headlineHasName = name && line.toLowerCase().includes(name.toLowerCase());
+  const parts = parseOffer(offer);
+  const hasPrice = parts.now != null || Boolean(parts.flat);
+  const note = parts.note && parts.note.toLowerCase() !== name.toLowerCase() ? parts.note : '';
+  const save = parts.save != null && !line.toLowerCase().includes(rm(parts.save).toLowerCase()) ? parts.save : null;
+  const kicker = weatherLabel && !/good/i.test(weatherLabel) ? (malay ? 'Istimewa musim jerebu' : 'Haze-day special') : '';
+  const issues = posterChecks({ product: name, isFood, hasPhoto: Boolean(photo), photoEdge, offer, headline, cta });
+  const style = {
+    '--ground': palette.ground, '--ink': palette.ink, '--price': palette.price, '--price-ink': palette.priceInk,
+    '--fit': headlineFit(line),
+  } as CSSProperties;
   return (
-    <figure className={`poster t-${tone}`} style={{ background: c1, color: c3 }} data-testid="poster-preview" data-tone={tone}>
-      <div className="poster-band" style={{ background: c2 }} />
-      <div className="poster-top">
-        {src ? <img src={src} alt="" className="poster-logo" /> : <span className="poster-initial" style={{ background: c3, color: c1 }}>{(business?.name || 'S').slice(0, 1)}</span>}
-        <span>{business?.name || 'Your business'}</span>
-        <span className="poster-weather">{weather}</span>
+    <div className="poster-col">
+      <div className="poster-directions" role="group" aria-label="Poster direction">
+        {POSTER_DIRECTIONS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={item.id === direction ? 'active' : ''}
+            aria-pressed={item.id === direction}
+            onClick={() => { setPicked(item.id); saveDirection(business?.id, item.id); }}
+            data-testid={`poster-direction-${item.id}`}
+          >{item.label}</button>
+        ))}
       </div>
-      <div className="poster-stage">
-        {art ? <div className="poster-art" aria-hidden="true" dangerouslySetInnerHTML={{ __html: art }} /> : <div className="poster-haze" aria-hidden="true" />}
-        {photo ? <img className="poster-photo" src={photo} alt="" /> : null}
-      </div>
-      {name ? <p className="poster-product">{name}</p> : null}
-      <h5>{headline || 'Your headline here'}</h5>
-      {offer && <div className="poster-offer" style={{ background: c3, color: c1 }}>{offer}</div>}
-      <div className="poster-cta" style={{ borderColor: c3 }}>{cta || 'Call to action'}</div>
-      <figcaption className="sr-only">Poster for {name || 'the menu item'} during {weather}</figcaption>
-    </figure>
+      <figure className={`poster d-${direction} ${image}`} style={style} data-testid="poster-preview" data-direction={direction}>
+        {photo ? (
+          <div className="poster-hero">
+            <img src={photo} alt="" onLoad={(event) => setPhotoSize({ src: photo, edge: Math.min(event.currentTarget.naturalWidth, event.currentTarget.naturalHeight) })} />
+          </div>
+        ) : null}
+        <div className="poster-copy">
+          <div className="poster-line">
+            {kicker ? <p className="poster-kicker">{kicker}</p> : null}
+            {name && !headlineHasName ? <p className="poster-product">{name}</p> : null}
+            <h5>{line}</h5>
+            {note ? <p className={hasPrice ? 'poster-note' : 'poster-note is-offer'}>{note}</p> : null}
+          </div>
+          {hasPrice ? (
+            <div className="poster-deal">
+              {parts.was != null || save != null ? (
+                <span className="poster-was">
+                  {parts.was != null ? <s>{rm(parts.was)}</s> : null}
+                  {save != null ? <span>{malay ? 'Jimat' : 'Save'} {rm(save)}</span> : null}
+                </span>
+              ) : null}
+              {parts.now != null ? (
+                <strong className={`poster-now ${priceDigits(parts.now).length > 3 ? 'is-long' : ''}`}><small>RM</small>{priceDigits(parts.now)}</strong>
+              ) : <strong className="poster-now is-flat">{parts.flat}</strong>}
+            </div>
+          ) : null}
+        </div>
+        <div className="poster-signoff">
+          <span className="poster-brand">
+            {src ? <img src={src} alt="" className="poster-logo" /> : null}
+            <span className="poster-shop">{business?.name || 'Your business'}</span>
+          </span>
+          <span className="poster-cta">{cta || 'Call to action'}<ArrowRight aria-hidden="true" /></span>
+        </div>
+        <figcaption className="sr-only">Poster for {name || 'the menu item'}{weatherLabel ? ` during ${weatherLabel} haze` : ''}. {offer}</figcaption>
+      </figure>
+      {issues.length ? (
+        <div className="poster-checks" role="status" data-testid="poster-checks">
+          <strong><AlertTriangle size={13} aria-hidden="true" />Before this goes out</strong>
+          <ul>{issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>
+        </div>
+      ) : (
+        <div className="poster-checks is-clear" role="status" data-testid="poster-checks"><strong><CheckCircle2 size={13} aria-hidden="true" />Hero, price and action all read clearly</strong></div>
+      )}
+      <ShortVideoTeaser headline={line} />
+    </div>
   );
 }

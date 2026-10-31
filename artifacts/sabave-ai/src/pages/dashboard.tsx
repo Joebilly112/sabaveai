@@ -363,8 +363,8 @@ export default function Dashboard() {
               <section id="campaign-options" aria-labelledby="options-heading" data-testid="campaign-options">
                 <div className="options-head dash-options-head">
                   <div>
-                    <h3 id="options-heading">Ready-made campaigns for this haze</h3>
-                    <p>Options come from your Brand Kit. AI only writes the copy.</p>
+                    <h3 id="options-heading">Choose one campaign</h3>
+                    <p>From your Brand Kit. Preparing writes the poster. You still approve it.</p>
                   </div>
                 </div>
                 <div className="ai-toggle-row" data-testid="ai-toggle-row">
@@ -374,7 +374,7 @@ export default function Dashboard() {
                     <span><Sparkles size={13} /> Write copy with AI</span>
                   </label>
                   <span id="ai-toggle-help" className="ai-help" data-testid="text-ai-status">
-                    {aiStatus.isLoading ? 'Checking AI availability…' : aiConfigured ? `DeepSeek${aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''} · falls back to templates if it fails` : 'AI copy is unavailable: no DeepSeek API key is configured. Template copy will be used.'}
+                    {aiStatus.isLoading ? 'Checking…' : aiConfigured ? 'DeepSeek writes the poster. A template is used if it fails.' : 'No AI key. Template copy will be used.'}
                   </span>
                 </div>
                 {campaignOptions.length > 0 ? (
@@ -410,11 +410,6 @@ export default function Dashboard() {
                 <h3>Avg minutes alert → published</h3>
                 <strong>{minutesLabel(avgMinutes)}</strong>
                 <p>{avgMinutes === null ? 'Not enough published campaigns yet' : 'Average from activity-log timestamps, alert to publish.'}</p>
-              </article>
-              <article className="dash-stat">
-                <h3>Manual steps</h3>
-                <strong>—</strong>
-                <p>Staff drafts, the owner approves.</p>
               </article>
               <article className="dash-stat">
                 <h3>Days ahead of haze</h3>

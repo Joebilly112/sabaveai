@@ -1,5 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
-  <rect width="160" height="160" rx="28" fill="#B45309"/>
-  <circle cx="80" cy="74" r="36" fill="#F5E6A8"/>
-  <text x="80" y="128" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#FDE68A">Nasi</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <rect width="160" height="160" rx="28" fill="#F4E4C4"/>
+  <ellipse cx="80" cy="92" rx="58" ry="18" fill="#E7D3A8"/>
+  <ellipse cx="80" cy="84" rx="50" ry="34" fill="#F7F1E4"/>
+  <ellipse cx="80" cy="80" rx="36" ry="22" fill="#F3EFE4"/>
+  <path d="M52 78c8-16 48-16 56 0-8 10-48 10-56 0z" fill="#C4522A"/>
+  <ellipse cx="104" cy="70" rx="10" ry="7" fill="#F2D48A"/>
+  <path d="M96 66c6-10 16-8 14 2" fill="none" stroke="#6B8F3A" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="58" cy="74" r="7" fill="#8C3A1E"/>
 </svg>

@@ -198,7 +198,7 @@ function draftFromPreset(preset: OwnerDemoPreset): Draft {
       name: item.name,
       price: String(item.priceRM),
       imageDataUrl: item.imagePath,
-      bestseller: false,
+      bestseller: item.bestseller === true,
     })),
     team: shop.team.map((member) => ({ ...member })),
     budget: String(shop.budget),
@@ -276,13 +276,25 @@ function toInput(draft: Draft, business: Business, completedStep: number, finish
   };
 }
 
+const SHOP_TILES = 'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+
 function ShopMap({ lat, lon }: { lat: number; lon: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className="ob-map-note" role="status">
+        <strong>We need this shop’s location.</strong>
+        <p>The map didn’t load. Choose a city above, or use your location.</p>
+      </div>
+    );
+  }
   return (
     <div className="ob-map">
       <MapContainer key={`${lat},${lon}`} center={[lat, lon]} zoom={13} scrollWheelZoom={false} attributionControl>
         <TileLayer
-          attribution='&copy; OpenStreetMap &copy; CARTO'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; Esri'
+          url={SHOP_TILES}
+          eventHandlers={{ tileerror: () => setFailed(true) }}
         />
         <CircleMarker center={[lat, lon]} radius={9} pathOptions={{ color: '#F7F4EE', weight: 2, fillColor: '#0F7A5C', fillOpacity: 1 }} />
       </MapContainer>
@@ -315,6 +327,7 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
+  const [locationNote, setLocationNote] = useState('');
   const hydrated = useRef(false);
   useDocumentTitle('Set up your shop · sabave.ai');
 
@@ -585,6 +598,29 @@ export default function Onboarding() {
                   </label>
                 </div>
               )}
+              <button
+                type="button"
+                className="ob-link"
+                onClick={() => {
+                  if (!navigator.geolocation) {
+                    setLocationNote('This browser can’t share a location. Choose the shop’s city instead.');
+                    return;
+                  }
+                  setLocationNote('Allow location if your browser asks. We only use it to place the shop.');
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      patch({ lat: String(position.coords.latitude), lon: String(position.coords.longitude), exact: true });
+                      setLocationNote('Location set. You can still change the city.');
+                    },
+                    () => setLocationNote('Location was blocked. Choose the shop’s city instead.'),
+                    { enableHighAccuracy: false, timeout: 8000 },
+                  );
+                }}
+              >
+                Use my location
+              </button>
+              {locationNote ? <p className="ob-map-note" role="status">{locationNote}</p> : null}
+              {!showMap && <p className="ob-map-note" role="status">Choose a city. The haze check needs the shop’s location.</p>}
               {showMap && <ShopMap lat={Number(draft.lat)} lon={Number(draft.lon)} />}
             </>
           )}

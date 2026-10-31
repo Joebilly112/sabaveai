@@ -22,6 +22,7 @@ export type DemoMenuItem = {
   name: string;
   priceRM: number;
   imagePath: string;
+  bestseller?: boolean;
 };
 
 type DemoBusiness = {
@@ -92,7 +93,7 @@ export const DEMO_PRESETS: DemoPreset[] = [
     business: {
       name: 'Kopitiam Selera Pagi',
       type: 'cafe',
-      description: 'Old-school kopitiam warmth, affordable breakfast for working families.',
+      description: 'Shah Alam kopitiam since 1986. Kaya toast at the counter, nasi lemak before the office rush. Halal, and the regulars still have a usual.',
       city: 'Shah Alam',
       lat: 3.0733,
       lon: 101.5185,
@@ -101,18 +102,20 @@ export const DEMO_PRESETS: DemoPreset[] = [
       channels: ['facebook', 'instagram', 'whatsapp'],
       language: 'both',
       logoPath: '/seed/selera-pagi-logo.svg',
-      brandColours: ['#B45309', '#FDE68A'],
-      toneChips: tones(['traditional', 'family', 'halal-friendly']),
+      brandColours: ['#FDE68A', '#92400E', '#FFF7D6'],
+      toneChips: tones(['traditional', 'family', 'neighbourly']),
       posterPath: '/seed/selera-pagi-poster.svg',
-      posterDescription: 'A warm breakfast poster with bold type and a simple kopi cup illustration.',
-      posterStyleSummary: 'Traditional kopitiam warmth, friendly rounded lettering, and clear product-led layouts.',
-      posterColours: ['#B45309', '#FDE68A'],
-      websiteUrl: 'https://example.com/selerapagi',
-      websiteVoiceSummary: 'Friendly, familiar Malaysian breakfast language that emphasizes value and family.',
+      posterDescription: 'Yellow morning board, cream card, amber type. One real plate of nasi lemak, the price in a brown pill, no stock-photo clutter.',
+      posterStyleSummary: 'Kopitiam yellow ground, cream paper, and brown lettering, the same colours as the shop sign. One dish, one price.',
+      posterColours: ['#FDE68A', '#92400E', '#FFF7D6'],
+      websiteUrl: 'https://selerapagi.example.com',
+      websiteVoiceSummary: 'Like the uncle at the counter: short, warm, Bahasa Melayu and English in the same breath. The dish and the price come first. No hard sell.',
       menu: [
-        { id: 'mi_selera_kopi', name: 'Kopi O', priceRM: 2.5, imagePath: '/demo/selera-kopi.svg' },
-        { id: 'mi_selera_nasi', name: 'Nasi Lemak Ayam', priceRM: 8, imagePath: '/demo/selera-nasi.svg' },
-        { id: 'mi_selera_roti', name: 'Roti Bakar Kaya', priceRM: 4, imagePath: '/demo/selera-roti.svg' },
+        { id: 'mi_selera_nasi', name: 'Nasi Lemak Ayam', priceRM: 8, imagePath: '/demo/selera-nasi.jpg', bestseller: true },
+        { id: 'mi_selera_roti', name: 'Roti Bakar Kaya', priceRM: 4, imagePath: '/demo/selera-roti.jpg' },
+        { id: 'mi_selera_telur', name: 'Telur Setengah Masak', priceRM: 2.2, imagePath: '/demo/selera-telur.jpg' },
+        { id: 'mi_selera_kopi', name: 'Kopi O', priceRM: 2.5, imagePath: '/demo/selera-kopi.jpg' },
+        { id: 'mi_selera_teh', name: 'Teh Tarik', priceRM: 2.8, imagePath: '/demo/selera-teh.jpg' },
       ],
       team: [
         { id: 'tm_selera_owner', name: 'Mr. Tan', email: 'tan@selerapagi.demo', role: 'owner', invited: false },
@@ -121,8 +124,8 @@ export const DEMO_PRESETS: DemoPreset[] = [
       budget: 600,
       baseline: 9000,
       dip: 22,
-      neverSay: ['pork', 'alcohol', 'cheapest in town'],
-      targetCustomers: 'Office workers and families nearby.',
+      neverSay: ['pork', 'alcohol', 'cheapest in town', 'health claims'],
+      targetCustomers: 'Shah Alam office workers who eat before 9am, and families who come in on Saturday for the same usual.',
     },
   },
   {

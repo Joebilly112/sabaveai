@@ -3,6 +3,7 @@
   background: #070E0C;
   color: #F2EEE6;
   font-family: Inter, "DM Sans", sans-serif;
+  overflow-x: hidden;
 }
 
 .ob-wizard h1,
@@ -218,6 +219,19 @@
   overflow: hidden;
   border: 1px solid #24342F;
   margin: 8px 0 12px;
+}
+
+.ob-map-note {
+  margin: 8px 0 0;
+  color: #B9C2BC;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ob-map-note strong {
+  display: block;
+  color: #F2EEE6;
+  margin-bottom: 4px;
 }
 
 .ob-map .leaflet-container {

@@ -13,17 +13,12 @@ export function OptionCard({ option, index, onPrepare, preparing, disabled, prep
         </span>
       </div>
       <h4>{option.title}</h4>
-      <p className="option-desc">{option.description}</p>
-      <div className="option-offer"><span>Offer</span>{option.offer}</div>
-      <div className="option-why">
-        <span>Why this?</span>
-        <p>{option.reason}</p>
-      </div>
+      <p className="option-offer">{option.offer}</p>
+      <p className="option-desc">{option.reason}</p>
       <button className="action-btn primary option-go" onClick={onPrepare} disabled={!onPrepare || preparing || disabled} data-testid={`button-prepare-${index}`}>
         {preparing ? <RefreshCw size={13} className="animate-spin" /> : <PenLine size={13} />}
         {preparing ? (preparingLabel || 'Preparing…') : 'Prepare campaign'}
       </button>
-      <small className="option-note">Creates a draft for your review and approval.</small>
     </article>
   );
 }

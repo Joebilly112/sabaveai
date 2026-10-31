@@ -9,6 +9,7 @@ export const api = onRequest(
     memory: "512MiB",
     timeoutSeconds: 120,
     invoker: "public",
+    maxInstances: 1,
     secrets: [defineSecret("DEEPSEEK_API_KEY")],
   },
   app,
