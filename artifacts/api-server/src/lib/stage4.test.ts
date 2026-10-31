@@ -7,7 +7,7 @@ import { users } from "./users";
 import { hazeSignal } from "../signals/hazeSignal";
 import { evaluate } from "./triggerEngine";
 import { campaignOptions } from "./campaignRules";
-import { fallbackPosterSvg, sanitizePosterSvg } from "./posterArt";
+import { fallbackPosterSvg, productLabel, sanitizePosterSvg, sceneFromPlan } from "./posterArt";
 
 ensureSeededStore();
 
@@ -41,6 +41,14 @@ test("copy retry rejects never-say and allowlists business data only", async () 
   assert.equal(calls, 2);
   assert.equal(result.source, "ai");
   assert.equal(result.model, "test-pro");
+});
+test("a rationale citing a blocked term stays internal and keeps the AI copy", async () => {
+  const term = "health claims";
+  const shop = { ...business, brandKit: { ...business.brandKit, neverSay: [...business.brandKit.neverSay, term] } };
+  const fake: typeof generateJSON = async (_input, validate) => ({ value: validate({ ...valid, rationale: `Avoids ${term}.` }), model: "test-pro" });
+  assert.equal((await generateCopy(shop, alert, option, user, fake)).source, "ai");
+  const published: typeof generateJSON = async (_input, validate) => ({ value: validate({ ...valid, caption_en: `No ${term} here.` }), model: "test-pro" });
+  assert.equal((await generateCopy(shop, alert, option, user, published)).source, "template");
 });
 test("repeated forbidden output and provider errors fall back explicitly", async () => {
   const bad: typeof generateJSON = async (_input, validate) => ({ value: validate({ ...valid, cta: "cure" }), model: "test-pro" });
@@ -93,6 +101,25 @@ test("poster vectors stay plain shapes and follow the product", () => {
   assert.match(ok || "", /circle/);
   const art = fallbackPosterSvg(business, option, alert);
   assert.equal(sanitizePosterSvg(art), art);
+  assert.match(art, /viewBox="0 0 300 200"/);
+  assert.match(art, /#0F7A5C/);
+  assert.match(art, /#E0563F|#F08A3C/);
+  assert.equal(productLabel(business, option), "Nasi Lemak Ayam");
+  assert.equal(productLabel(business, { ...option, offer: "Kopi O for two" }), "Kopi O");
+  assert.equal(sceneFromPlan({ subjects: ["haze", "cup"] }, "bowl"), null);
+  assert.equal(sceneFromPlan({ svg: "<svg></svg>" }, "bowl"), null);
+  assert.deepEqual(sceneFromPlan({ subjects: ["person", "haze", "bowl"] }, "bowl"), ["person", "haze", "bowl"]);
   assert.match(templateCopy(business, option, alert).headline, /hazy days|delivered/);
   assert.match(templateCopy(business, option, alert).posterArt || "", /<svg/);
+});
+
+test("template calls to action are one step that fits how the shop sells", () => {
+  const kit = (delivery: boolean, language: typeof business.brandKit.language) => ({ ...business, brandKit: { ...business.brandKit, delivery, language } });
+  const walkIn = { ...option, kind: "clean_air_walk_in" };
+  const push = { ...option, kind: "delivery_push" };
+  assert.equal(templateCopy(kit(true, "en"), push, alert).cta, "Order now");
+  assert.equal(templateCopy(kit(true, "bm"), push, alert).cta, "Pesan sekarang");
+  assert.equal(templateCopy(kit(false, "both"), push, alert).cta, "Message us today");
+  assert.equal(templateCopy(kit(true, "en"), walkIn, alert).cta, "Visit us today");
+  assert.equal(aiCopySchema.safeParse({ ...valid, cta: "Please contact us today so we can arrange your order" }).success, false);
 });

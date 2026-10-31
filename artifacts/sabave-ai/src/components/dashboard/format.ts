@@ -63,6 +63,12 @@ export function malaysiaToday() {
   }).format(new Date());
 }
 
+/** Whole days from today in Malaysia. Zero when the date is today or already past. */
+export function daysUntil(date: string, today = malaysiaToday()) {
+  const days = Math.round((Date.parse(date.slice(0, 10)) - Date.parse(today)) / 86_400_000);
+  return Number.isFinite(days) ? Math.max(0, days) : 0;
+}
+
 export function scrollToSection(id: string) {
   const node = document.getElementById(id);
   if (!node) return;

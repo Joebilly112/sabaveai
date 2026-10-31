@@ -71,7 +71,7 @@ html:has(.app-dark) ::selection {
 }
 
 .app-dark :focus-visible {
-  outline: 2px solid #9DCFB4;
+  outline: 2px solid #B9C2BC;
   outline-offset: 2px;
 }
 
@@ -92,7 +92,7 @@ html:has(.app-dark) ::selection {
 .app-dark .brand-mark {
   background: #0F7A5C;
   color: #0B1412;
-  border-radius: 12px 12px 12px 4px;
+  border-radius: 6px;
 }
 
 .app-dark .brand-caption,
@@ -101,13 +101,12 @@ html:has(.app-dark) ::selection {
 .app-dark .legend-label,
 .app-dark .updated-time,
 .app-dark .footer-line,
-.app-dark .option-note,
 .app-dark .save-state {
   color: #7E8A84;
 }
 
 .app-dark .footer-line {
-  margin-top: 16px;
+  margin-top: 40px;
   padding: 0;
   border: 0;
   background: #070E0C;
@@ -116,7 +115,7 @@ html:has(.app-dark) ::selection {
 
 .app-dark .nav-item {
   color: #B9C2BC;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .app-dark .nav-item:hover {
@@ -149,7 +148,7 @@ html:has(.app-dark) ::selection {
   border: 0;
   background: transparent;
   color: #B9C2BC;
-  border-radius: 12px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
@@ -175,7 +174,7 @@ html:has(.app-dark) ::selection {
   background: #0B1412;
   border-color: #24342F;
   color: #F2EEE6;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .app-dark .top-select option {
@@ -195,21 +194,20 @@ html:has(.app-dark) ::selection {
 .app-dark .approval-row input:focus,
 .app-dark .rm-input:focus-within,
 .app-dark .top-select:focus-visible {
-  border-color: #0F7A5C;
-  box-shadow: 0 0 0 3px rgba(157, 207, 180, 0.35);
+  border-color: #B9C2BC;
+  box-shadow: none;
 }
 
 .app-dark .journey-progress,
 .app-dark .forecast-panel,
-.app-dark .option-card,
 .app-dark .editor-card,
 .app-dark .kit-section,
 .app-dark .draft-item,
 .app-dark .info-card {
   background: #101C19;
   border-color: #24342F;
-  border-radius: 16px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  border-radius: 6px;
+  box-shadow: none;
 }
 
 .app-dark .info-card,
@@ -228,8 +226,8 @@ html:has(.app-dark) ::selection {
 }
 
 .app-dark .journey-step.current {
-  color: #9DCFB4;
-  background: color-mix(in srgb, #0F7A5C 24%, #101C19);
+  color: #B9C2BC;
+  background: #15231F;
 }
 
 .app-dark .journey-step.complete {
@@ -238,16 +236,15 @@ html:has(.app-dark) ::selection {
 
 .app-dark .journey-step.current .journey-marker,
 .app-dark .journey-step.complete .journey-marker {
-  border-color: #9DCFB4;
-  color: #9DCFB4;
-  background: color-mix(in srgb, #0F7A5C 28%, #101C19);
+  border-color: #B9C2BC;
+  color: #B9C2BC;
+  background: #15231F;
 }
 
 .app-dark .heading-sub,
 .app-dark .business-heading span,
 .app-dark .forecast-title p,
 .app-dark .info-card p,
-.app-dark .option-desc,
 .app-dark .calm-card p,
 .app-dark .options-head p,
 .app-dark .draft-item small,
@@ -265,8 +262,6 @@ html:has(.app-dark) ::selection {
 
 .app-dark .eyebrow,
 .app-dark .source-pill,
-.app-dark .option-budget,
-.app-dark .option-why span,
 .app-dark .rationale span,
 .app-dark .notice,
 .app-dark .pub-head,
@@ -275,7 +270,7 @@ html:has(.app-dark) ::selection {
 .app-dark .channel.on,
 .app-dark .s-published,
 .app-dark .r-staff {
-  color: #9DCFB4;
+  color: #B9C2BC;
 }
 
 .app-dark .source-pill,
@@ -283,19 +278,19 @@ html:has(.app-dark) ::selection {
 .app-dark .chip,
 .app-dark .notice,
 .app-dark .r-staff {
-  background: color-mix(in srgb, #0F7A5C 20%, #101C19);
+  background: #15231F;
 }
 
 .app-dark .action-btn {
-  border-radius: 12px;
+  border-radius: 6px;
   border-color: #24342F;
   background: transparent;
   color: #F2EEE6;
 }
 
 .app-dark .action-btn:hover:not(:disabled) {
-  border-color: #0F7A5C;
-  background: color-mix(in srgb, #0F7A5C 18%, transparent);
+  border-color: #7E8A84;
+  background: rgba(242, 238, 230, 0.05);
   color: #F2EEE6;
 }
 
@@ -329,7 +324,7 @@ html:has(.app-dark) ::selection {
 .app-dark .retry-btn {
   background: #E0563F;
   color: #0B1412;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 /* Forecast */
@@ -343,7 +338,7 @@ html:has(.app-dark) ::selection {
 .app-dark .haze-icon {
   background: color-mix(in srgb, #F08A3C 18%, #15231F);
   color: #F08A3C;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .app-dark .day-card:hover {
@@ -387,7 +382,7 @@ html:has(.app-dark) ::selection {
 
 /* Alerts and options */
 .app-dark .alert-card {
-  border-radius: 16px;
+  border-radius: 6px;
   border-color: color-mix(in srgb, #F08A3C 55%, #24342F);
   background: linear-gradient(145deg, #1A2823, #15231F 58%, #1C1A16);
   color: #F2EEE6;
@@ -428,29 +423,14 @@ html:has(.app-dark) ::selection {
 }
 
 .app-dark .calm-card,
-.app-dark .published-panel,
-.app-dark .ai-toggle-row {
-  background: color-mix(in srgb, #0F7A5C 14%, #101C19);
-  border-color: color-mix(in srgb, #0F7A5C 42%, #24342F);
-  border-radius: 16px;
+.app-dark .published-panel {
+  background: #15231F;
+  border-color: #24342F;
+  border-radius: 6px;
 }
 
 .app-dark .calm-card svg {
-  color: #9DCFB4;
-}
-
-.app-dark .option-offer {
-  background: #15231F;
-  color: #F2EEE6;
-  border-radius: 12px;
-}
-
-.app-dark .option-why {
-  border-left-color: color-mix(in srgb, #9DCFB4 70%, #24342F);
-}
-
-.app-dark .option-card:hover {
-  transform: translateY(-2px);
+  color: #B9C2BC;
 }
 
 /* Studio */
@@ -508,13 +488,18 @@ html:has(.app-dark) ::selection {
 .app-dark .ai-toggle input:checked + .ai-switch,
 .app-dark .toggle input:checked + .toggle-track,
 .app-dark .segmented button.on {
-  background: #0F7A5C;
-  color: #F7F4EE;
+  background: #F2EEE6;
+  color: #0B1412;
+}
+
+.app-dark .ai-toggle input:checked + .ai-switch i,
+.app-dark .toggle input:checked + .toggle-track::after {
+  background: #0B1412;
 }
 
 .app-dark .ai-toggle input:focus-visible + .ai-switch,
 .app-dark .toggle input:focus-visible + .toggle-track {
-  outline: 2px solid #9DCFB4;
+  outline: 2px solid #B9C2BC;
   outline-offset: 2px;
   box-shadow: none;
 }
@@ -578,7 +563,7 @@ html:has(.app-dark) ::selection {
 .app-dark .icon-btn,
 .app-dark .swatch-add,
 .app-dark .segmented {
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .app-dark .segmented {
@@ -607,8 +592,8 @@ html:has(.app-dark) ::selection {
 }
 
 .app-dark .chip-suggest button:hover:not(:disabled) {
-  color: #9DCFB4;
-  background: color-mix(in srgb, #0F7A5C 16%, #101C19);
+  color: #B9C2BC;
+  background: #15231F;
 }
 
 .app-dark .channel {
@@ -617,16 +602,16 @@ html:has(.app-dark) ::selection {
 }
 
 .app-dark .channel.on {
-  border-color: #0F7A5C;
-  background: color-mix(in srgb, #0F7A5C 18%, #101C19);
-  color: #9DCFB4;
+  border-color: #7E8A84;
+  background: #15231F;
+  color: #B9C2BC;
 }
 
 .app-dark .save-bar {
   background: color-mix(in srgb, #101C19 92%, transparent);
   border-color: #24342F;
-  border-radius: 16px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  border-radius: 6px;
+  box-shadow: none;
 }
 
 .app-dark .save-bar.is-dirty .save-state {
@@ -641,7 +626,7 @@ html:has(.app-dark) [role="status"].group {
   background: #101C19;
   color: #F2EEE6;
   border-color: #24342F;
-  border-radius: 16px;
+  border-radius: 6px;
 }
 
 /* Dashboard page */
@@ -702,19 +687,14 @@ html:has(.app-dark) [role="status"].group {
 }
 
 .app-dark .dash-demo-tag {
-  border: 1px solid #24342F;
-  border-radius: 999px;
-  padding: 2px 6px;
   color: #7E8A84;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .app-dark .dash-stack {
   display: grid;
-  gap: 16px;
+  gap: 40px;
 }
 
 .app-dark .dash-hero {
@@ -734,7 +714,7 @@ html:has(.app-dark) [role="status"].group {
   padding: 16px 16px 16px 20px;
   border: 1px solid #24342F;
   border-left: 4px solid var(--bar);
-  border-radius: 16px;
+  border-radius: 6px;
   background: color-mix(in srgb, var(--bar) 8%, #15231F);
   color: #F2EEE6;
 }
@@ -749,10 +729,8 @@ html:has(.app-dark) [role="status"].group {
 .app-dark .dash-kicker {
   margin: 0;
   color: #7E8A84;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .app-dark .dash-action h2 {
@@ -802,7 +780,7 @@ html:has(.app-dark) [role="status"].group {
   height: 320px;
   overflow: hidden;
   border: 1px solid #24342F;
-  border-radius: 16px;
+  border-radius: 6px;
   background: #101C19;
 }
 
@@ -857,7 +835,7 @@ html:has(.app-dark) [role="status"].group {
   padding: 8px 10px;
   list-style: none;
   border: 1px solid #24342F;
-  border-radius: 12px;
+  border-radius: 6px;
   background: rgba(16, 28, 25, 0.92);
   color: #F2EEE6;
   font-size: 11px;
@@ -905,7 +883,7 @@ html:has(.app-dark) [role="status"].group {
 .app-dark .dash-map-frame .leaflet-popup-tip {
   background: #15231F;
   color: #F2EEE6;
-  border-radius: 12px;
+  border-radius: 6px;
   box-shadow: none;
 }
 
@@ -953,11 +931,11 @@ html:has(.app-dark) [role="status"].group {
   text-align: left;
   padding: 8px;
   border: 1px solid #24342F;
-  border-radius: 12px;
+  border-radius: 6px;
   background: #101C19;
   color: #F2EEE6;
 }
-.app-dark .dash-map-fallback button.is-selected { border-color: #0F7A5C; }
+.app-dark .dash-map-fallback button.is-selected { border-color: #7E8A84; }
 .app-dark .dash-map-fallback button strong,
 .app-dark .dash-map-fallback button small { display: block; }
 .app-dark .dash-map-fallback button small { color: #B9C2BC; font-size: 12px; }
@@ -970,7 +948,7 @@ html:has(.app-dark) [role="status"].group {
   list-style: none;
   overflow: hidden;
   border: 1px solid #24342F;
-  border-radius: 16px;
+  border-radius: 6px;
   background: #15231F;
 }
 
@@ -991,7 +969,7 @@ html:has(.app-dark) [role="status"].group {
 .app-dark .dash-journey .is-complete { color: #F2EEE6; }
 
 .app-dark .dash-journey .is-current {
-  background: color-mix(in srgb, #0F7A5C 32%, #15231F);
+  background: #1E2F2A;
   color: #F7F4EE;
 }
 
@@ -1005,14 +983,14 @@ html:has(.app-dark) [role="status"].group {
 }
 
 .app-dark .dash-journey .is-complete .dash-marker {
-  border-color: #2BB673;
-  background: color-mix(in srgb, #2BB673 18%, #15231F);
-  color: #2BB673;
+  border-color: #7E8A84;
+  background: transparent;
+  color: #F2EEE6;
 }
 
 .app-dark .dash-journey .is-current .dash-marker {
-  border-color: #0F7A5C;
-  background: #0F7A5C;
+  border-color: #F2EEE6;
+  background: #F2EEE6;
 }
 
 .app-dark .dash-journey-label {
@@ -1022,7 +1000,7 @@ html:has(.app-dark) [role="status"].group {
 }
 
 .app-dark .dash-here {
-  color: #9DCFB4;
+  color: #B9C2BC;
   font-size: 10px;
   font-weight: 700;
   line-height: 1.2;
@@ -1030,7 +1008,7 @@ html:has(.app-dark) [role="status"].group {
 
 .app-dark .dash-forecast {
   border: 1px solid #24342F;
-  border-radius: 16px;
+  border-radius: 6px;
   background: #15231F;
   padding: 16px;
 }
@@ -1080,7 +1058,7 @@ html:has(.app-dark) [role="status"].group {
   padding: 12px 12px 14px;
   overflow: hidden;
   border: 1px solid #24342F;
-  border-radius: 16px;
+  border-radius: 6px;
   background: color-mix(in srgb, var(--sev) 12%, #15231F);
   color: #F2EEE6;
 }
@@ -1100,17 +1078,15 @@ html:has(.app-dark) [role="status"].group {
 
 .app-dark .dash-dow {
   color: #B9C2BC;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .app-dark .dash-dom { font-size: 13px; font-weight: 650; }
 
 .app-dark .dash-peak {
   border: 1px solid color-mix(in srgb, var(--sev) 70%, #24342F);
-  border-radius: 999px;
+  border-radius: 4px;
   padding: 2px 6px;
   background: color-mix(in srgb, var(--sev) 28%, #101C19);
   color: #F7F4EE;
@@ -1145,7 +1121,7 @@ html:has(.app-dark) [role="status"].group {
   display: inline-flex;
   margin-top: auto;
   border: 1px solid color-mix(in srgb, var(--sev) 55%, #24342F);
-  border-radius: 999px;
+  border-radius: 4px;
   padding: 3px 8px;
   background: color-mix(in srgb, var(--sev) 22%, #101C19);
   color: #F7F4EE;
@@ -1164,7 +1140,7 @@ html:has(.app-dark) [role="status"].group {
   max-width: 180px;
   padding: 6px 8px;
   border: 1px solid #24342F;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #101C19;
   color: #F2EEE6;
   font-size: 11px;
@@ -1183,7 +1159,7 @@ html:has(.app-dark) [role="status"].group {
   bottom: 8px;
   left: 12px;
   height: 3px;
-  border-radius: 999px;
+  border-radius: 4px;
   background: var(--sev);
 }
 
@@ -1219,7 +1195,7 @@ html:has(.app-dark) [role="status"].group {
 .app-dark .dash-chart-tip {
   padding: 8px 10px;
   border: 1px solid #24342F;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #101C19;
   color: #F2EEE6;
   font-family: Inter, sans-serif;
@@ -1250,23 +1226,21 @@ html:has(.app-dark) [role="status"].group {
   font-size: 13px;
 }
 
-.app-dark .dash .option-card { border-radius: 16px; }
 .app-dark .dash .studio { margin-top: 0; }
 .app-dark #campaign-options,
 .app-dark #draft-editor { scroll-margin-top: 88px; }
 
+.app-dark .dash .editor-card .empty-state { padding: 32px 16px; }
 .app-dark .dash-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px 40px;
+  padding-top: 20px;
+  border-top: 1px solid #24342F;
 }
 
 .app-dark .dash-stat {
   min-width: 0;
-  padding: 16px;
-  border: 1px solid #24342F;
-  border-radius: 16px;
-  background: #15231F;
 }
 
 .app-dark .dash-stat h3 {
@@ -1280,10 +1254,10 @@ html:has(.app-dark) [role="status"].group {
 
 .app-dark .dash-stat strong {
   display: block;
-  margin: 8px 0;
+  margin: 6px 0 4px;
   color: #F2EEE6;
   font-family: "Space Grotesk", Manrope, sans-serif;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -1301,12 +1275,11 @@ html:has(.app-dark) [role="status"].group {
 .app-dark .dash-log-link:focus-visible,
 .app-dark .dash-pill:focus-visible,
 .app-dark .dash-map-fallback button:focus-visible {
-  outline: 2px solid #9DCFB4;
+  outline: 2px solid #B9C2BC;
   outline-offset: 2px;
 }
 
 @media (max-width: 900px) {
-  .app-dark .dash-stats { grid-template-columns: 1fr 1fr; }
   .app-dark .dash-reading strong { font-size: 22px; }
 }
 
@@ -1348,9 +1321,72 @@ html:has(.app-dark) [role="status"].group {
   }
 
   .app-dark .day-card:hover,
-  .app-dark .option-card:hover,
   .app-dark .draft-item:hover,
   .app-dark .action-btn:hover:not(:disabled) {
     transform: none;
   }
+}
+
+/* House rules for the signed-in app: hairlines, one green, sentence case. */
+.app-dark :is(.fields input:not([type=checkbox]), .fields textarea, .fields select, .approval-row input, .text-input, .rm-input, .top-select) {
+  border-radius: 4px;
+}
+
+.app-dark .fields select {
+  min-height: 38px;
+  padding: 0 8px;
+  border: 1px solid #24342F;
+  background: transparent;
+  color: #F2EEE6;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.app-dark .fields label,
+.app-dark .channels > span {
+  color: #B9C2BC;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.app-dark .fields { gap: 32px; }
+.app-dark .editor-body { gap: 32px; }
+.app-dark .studio-grid { grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
+
+.app-dark :is(.info-label, .brand-caption, .eyebrow, .kit-num, .unsaved, .published-panel dt, .check em, .rationale span, .status-chip, .sim-tag, .source-pill) {
+  border-radius: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--app-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.app-dark :is(.status-chip, .source-pill, .check em, .rationale span) { color: #B9C2BC; }
+.app-dark .sim-tag { color: #F08A3C; }
+.app-dark .source-dot { display: none; }
+.app-dark .rationale { margin: 0; }
+
+.app-dark .draft-item:hover { transform: none; }
+.app-dark .draft-item.active { border-color: #7E8A84; box-shadow: none; }
+.app-dark .check input { accent-color: #F2EEE6; }
+.app-dark :is(.notice, .pub-head) { color: #F2EEE6; }
+.app-dark .poster-checks.is-clear svg { color: #B9C2BC; }
+.app-dark .poster-directions { border-radius: 6px; }
+.app-dark .poster-directions button { border-radius: 4px; }
+.app-dark .poster-directions button:focus-visible { outline-color: #F2EEE6; }
+.app-dark figure.poster { box-shadow: none; }
+
+.app-dark .option-row:hover { background: rgba(242, 238, 230, 0.03); }
+.app-dark .option-row.is-selected { background: #15231F; }
+.app-dark .option-row input:focus-visible { outline: 2px solid #F2EEE6; outline-offset: 2px; }
+.app-dark .option-row-reason { color: #B9C2BC; }
+.app-dark .ai-toggle { font-size: 13px; font-weight: 500; }
+.app-dark .dash-stat.is-empty p { margin-top: 6px; }
+
+@media (max-width: 640px) {
+  .app-dark .option-row-reason { white-space: normal; }
 }

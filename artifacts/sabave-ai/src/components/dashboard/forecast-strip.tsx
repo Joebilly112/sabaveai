@@ -22,9 +22,9 @@ function SeverityIcon({ level }: { level: number }) {
 }
 
 function sourceLabel(source: SignalForecast['source']) {
-  if (source === 'simulated') return 'SIMULATED';
-  if (source === 'offline') return 'OFFLINE DATA';
-  return 'LIVE · OPEN-METEO';
+  if (source === 'simulated') return 'Simulated';
+  if (source === 'offline') return 'Offline data';
+  return 'Live from Open-Meteo';
 }
 
 function ChartTip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { day: string; date: string; value: number; unit: string; label: string } }> }) {

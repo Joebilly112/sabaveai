@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, FileText, Info, RefreshCw, Send, Sparkles, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, FileText, Info, RefreshCw, Send, XCircle } from 'lucide-react';
 import {
   getListActivityLogQueryKey, getListDraftsQueryKey, useDecideDraft, useGetAIStatus, useListDrafts, useRegenerateDraft, useUpdateDraft,
 } from '@workspace/api-client-react';
 import type { Business, CampaignDraft, DraftUpdateChannelsItem } from '@workspace/api-client-react';
 import { asArray } from '@/lib/as-array';
 import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
-import { PosterPreview } from '@/components/PosterPreview';
+import { menuItemForOffer, PosterPreview } from '@/components/PosterPreview';
 
 const BASE_NEVER = ['cure', 'protects your lungs', 'prevents illness', 'kills germs'];
 const STATUS_LABEL: Record<string, string> = { draft: 'Draft', pending_approval: 'Pending approval', published: 'Published', rejected: 'Rejected' };
@@ -91,9 +91,15 @@ export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }:
   const neverSay = useMemo(() => [...BASE_NEVER, ...asArray<string>(business?.brandKit?.neverSay)], [business]);
   const itemPhotos = useMemo(() => asArray(business?.brandKit?.menuItems).filter((item) => item.imageDataUrl), [business]);
   const [itemPhotoId, setItemPhotoId] = useState('');
+  const offerForPhoto = form?.offer ?? '';
   useEffect(() => {
-    setItemPhotoId((current) => (current && itemPhotos.some((item) => item.id === current) ? current : (itemPhotos.find((item) => item.bestseller) ?? itemPhotos[0])?.id ?? ''));
-  }, [itemPhotos]);
+    const matched = menuItemForOffer(offerForPhoto, itemPhotos);
+    setItemPhotoId((current) => {
+      if (matched) return matched.id;
+      if (current && itemPhotos.some((item) => item.id === current)) return current;
+      return (itemPhotos.find((item) => item.bestseller) ?? itemPhotos[0])?.id ?? '';
+    });
+  }, [draft?.id, offerForPhoto, itemPhotos]);
   const editable = draft && (draft.status === 'draft' || draft.status === 'rejected');
 
   const refresh = (d: CampaignDraft) => {
@@ -152,6 +158,11 @@ export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }:
     } catch (e) { if (loadedId.current === id) setError(apiErrorInfo(e)); } finally { setBusy(''); }
   };
 
+  useEffect(() => {
+    if (!list.length || busy) return;
+    if (!selectedId || !list.some((item) => item.id === selectedId)) onSelect(list[0].id);
+  }, [list, selectedId, busy, onSelect]);
+
   const openDraft = (id: string) => {
     if (id === selectedId || busy) return;
     if (dirtyRef.current && !window.confirm('You have unsaved edits. Discard them and open another draft?')) return;
@@ -173,37 +184,33 @@ export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }:
   return (
     <section className="studio" aria-labelledby="studio-heading" data-testid="campaign-studio">
       <div className="options-head">
-        <div><div className="info-label">Campaign drafts</div><h3 id="studio-heading">Review, approve, publish</h3></div>
-        <p>Drafts stay in server memory until a restart. Staff submit, the owner approves. Publishing is simulated.</p>
+        <div><h3 id="studio-heading">Drafts</h3></div>
       </div>
       <div className="studio-grid">
         <aside className="draft-list" data-testid="draft-list">
           {drafts.isLoading && [0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 54, marginBottom: 8 }} />)}
-          {drafts.isError && (
-            <div className="error-box compact" role="alert"><span>Drafts could not load.</span><button className="retry-btn" onClick={() => drafts.refetch()}>Try again</button></div>
-          )}
           {list.map((d) => (
             <button key={d.id} className={`draft-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => openDraft(d.id)} disabled={!!busy && d.id !== selectedId} data-testid={`draft-item-${d.id}`}>
-              <span className={`status-chip s-${d.status}`}>{STATUS_LABEL[d.status] || d.status}</span>
               <strong>{d.copy.headline || d.option.title}</strong>
-              <small>{d.option.title} · RM {d.budgetRM}</small>
+              <small>{STATUS_LABEL[d.status] || d.status} · {d.option.title} · RM{d.budgetRM}</small>
             </button>
           ))}
         </aside>
 
         <div className="editor-card" id="draft-editor">
           {!draft || !form ? (
-            <div className="empty-state"><FileText size={22} style={{ margin: '0 auto 8px', display: 'block' }} /><strong>Open a draft</strong>Pick a draft on the left, or prepare a new one from an option.</div>
+            <div className="empty-state small"><FileText size={18} aria-hidden="true" /><strong>Select a draft</strong></div>
           ) : (
             <>
               <div className="editor-head">
-                <div>
-                  <span className={`status-chip s-${draft.status}`} data-testid="draft-status">{STATUS_LABEL[draft.status]}</span>
-                  <span className={`source-pill ${draft.copy.source === 'ai' ? 'ai' : ''}`} style={{ marginLeft: 8 }} data-testid="copy-source"><i className="source-dot" />{draft.copy.source === 'ai' ? `AI (DeepSeek${draft.copy.model ? ` · ${draft.copy.model}` : ''})` : 'Template'}</span>
+                <p className="editor-status">
+                  <span data-testid="draft-status">{STATUS_LABEL[draft.status]}</span>
+                  {' · '}
+                  <span data-testid="copy-source">{draft.copy.source === 'ai' ? 'written with AI' : 'template copy'}</span>
                   {draft.status === 'pending_approval' && role === 'owner' && (
-                    <span className="awaiting-badge" role="status" data-testid="awaiting-approval-badge"><CheckCircle2 size={13} />Awaiting your approval</span>
+                    <span role="status" data-testid="awaiting-approval-badge"> · awaiting your approval</span>
                   )}
-                </div>
+                </p>
                 {dirty && <span className="unsaved" data-testid="unsaved-indicator">Unsaved changes</span>}
               </div>
 
@@ -220,9 +227,9 @@ export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }:
               {editable && aiConfigured && (
                 <div className="regen-row">
                   <button className="action-btn" onClick={regenerate} disabled={!!busy || dirty} aria-describedby="regen-help" data-testid="button-regenerate-ai">
-                    {busy === 'regen' ? <RefreshCw size={13} className="animate-spin" /> : <Sparkles size={13} />}{busy === 'regen' ? 'Rewriting with AI…' : 'Regenerate with AI'}
+                    {busy === 'regen' ? <RefreshCw size={13} className="animate-spin" /> : <RefreshCw size={13} />}{busy === 'regen' ? 'Rewriting…' : 'Rewrite wording'}
                   </button>
-                  <small id="regen-help" data-testid="text-regen-help">{dirty ? 'Save first — regenerating would replace your unsaved edits.' : 'Rewrites headline, captions, hashtags and CTA only. Offer, budget and channels stay.'}</small>
+                  <small id="regen-help" data-testid="text-regen-help">{dirty ? 'Save first.' : 'New wording. The offer and price stay.'}</small>
                 </div>
               )}
 
@@ -232,7 +239,7 @@ export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }:
 
               {draft.status === 'published' && draft.publishResult && (
                 <div className="published-panel" data-testid="publish-result">
-                  <div className="pub-head"><CheckCircle2 size={18} /><strong>Published</strong><span className="sim-tag">SIMULATED · nothing was posted</span></div>
+                  <div className="pub-head"><CheckCircle2 size={18} /><strong>Published</strong><span className="sim-tag">Simulated. Nothing was posted.</span></div>
                   <dl>
                     <div><dt>Platforms</dt><dd>{draft.publishResult.platforms.join(', ') || '—'}</dd></div>
                     {Object.entries(draft.publishResult.postIds).map(([k, v]) => <div key={k}><dt>{k} post ID</dt><dd className="mono">{v}</dd></div>)}
@@ -246,48 +253,59 @@ export function CampaignStudio({ business, selectedId, onSelect, weatherLabel }:
 
               <div className="editor-body">
                 <fieldset className="fields" disabled={!editable || !!busy}>
-                  {itemPhotos.length > 0 && (
-                    <label>Item photo
-                      <select value={itemPhotoId} onChange={(e) => setItemPhotoId(e.target.value)} data-testid="select-item-photo">
-                        {itemPhotos.map((item) => <option key={item.id} value={item.id}>{item.name}{item.bestseller ? ' · Bestseller' : ''}</option>)}
-                      </select>
-                    </label>
-                  )}
-                  <label>Headline<input value={form.headline} onChange={(e) => set('headline', e.target.value)} maxLength={300} data-testid="input-headline" /></label>
-                  <Warn hits={findViolations(form.headline, neverSay)} />
-                  <label>Caption · Bahasa Malaysia{business?.brandKit.language !== 'en' && ' · Preferred'}<textarea rows={3} value={form.caption_bm} onChange={(e) => set('caption_bm', e.target.value)} data-testid="input-caption-bm" /></label>
-                  <Warn hits={findViolations(form.caption_bm, neverSay)} />
-                  <label>Caption · English{business?.brandKit.language !== 'bm' && ' · Preferred'}<textarea rows={3} value={form.caption_en} onChange={(e) => set('caption_en', e.target.value)} data-testid="input-caption-en" /></label>
-                  <Warn hits={findViolations(form.caption_en, neverSay)} />
-                  <label>Hashtags<input value={form.hashtags} onChange={(e) => set('hashtags', e.target.value)} placeholder="#jerebu #kopi" data-testid="input-hashtags" /></label>
-                  <Warn hits={findViolations(form.hashtags, neverSay)} />
-                  <label>Call to action<input value={form.cta} onChange={(e) => set('cta', e.target.value)} data-testid="input-cta" /></label>
-                  <Warn hits={findViolations(form.cta, neverSay)} />
-                  <label>Offer<input value={form.offer} onChange={(e) => set('offer', e.target.value)} data-testid="input-offer" /></label>
-                  <Warn hits={findViolations(form.offer, neverSay)} />
-                  <div className="two-col">
-                    <label>Budget (RM) · cap RM{business?.brandKit.monthlyAdBudgetCapRM}<input type="number" min={0} step="1" value={form.budget} onChange={(e) => set('budget', e.target.value)} data-testid="input-budget" />
-                      {Number(form.budget) > (business?.brandKit.monthlyAdBudgetCapRM ?? 0) && <span className="never-warn">Budget exceeds the business cap.</span>}
-                    </label>
-                    <div className="channels" role="group" aria-label="Channels">
-                      <span>Channels</span>
-                      {(['facebook', 'instagram'] as const).map((c) => (
-                        <label key={c} className="check"><input type="checkbox" checked={form.channels.includes(c)} onChange={() => toggle(c)} data-testid={`check-${c}`} />{c === 'facebook' ? 'Facebook' : 'Instagram'}</label>
-                      ))}
-                      {['WhatsApp', 'TikTok'].map((c) => <label key={c} className="check off"><input type="checkbox" disabled />{c}<em>soon</em></label>)}
+                  <section className="field-group" aria-labelledby="copy-fields">
+                    <h4 id="copy-fields">Copy</h4>
+                    <label>Headline<input value={form.headline} onChange={(e) => set('headline', e.target.value)} maxLength={300} data-testid="input-headline" /></label>
+                    <Warn hits={findViolations(form.headline, neverSay)} />
+                    <div className="caption-pair">
+                      <div>
+                        <label>Bahasa Malaysia<textarea rows={5} value={form.caption_bm} onChange={(e) => set('caption_bm', e.target.value)} data-testid="input-caption-bm" /></label>
+                        <Warn hits={findViolations(form.caption_bm, neverSay)} />
+                      </div>
+                      <div>
+                        <label>English<textarea rows={5} value={form.caption_en} onChange={(e) => set('caption_en', e.target.value)} data-testid="input-caption-en" /></label>
+                        <Warn hits={findViolations(form.caption_en, neverSay)} />
+                      </div>
                     </div>
-                  </div>
-                  {draft.copy.rationale && <p className="rationale"><span>Rationale</span>{draft.copy.rationale}</p>}
+                    <label>Hashtags<input value={form.hashtags} onChange={(e) => set('hashtags', e.target.value)} placeholder="#jerebu #kopi" data-testid="input-hashtags" /></label>
+                    <Warn hits={findViolations(form.hashtags, neverSay)} />
+                    <label>Call to action<input value={form.cta} onChange={(e) => set('cta', e.target.value)} data-testid="input-cta" /></label>
+                    <Warn hits={findViolations(form.cta, neverSay)} />
+                  </section>
+                  <section className="field-group" aria-labelledby="campaign-fields">
+                    <h4 id="campaign-fields">Campaign</h4>
+                    {itemPhotos.length > 0 && (
+                      <label>Item photo
+                        <select value={(menuItemForOffer(form.offer, itemPhotos) ?? itemPhotos.find((item) => item.id === itemPhotoId))?.id || ''} onChange={(e) => setItemPhotoId(e.target.value)} data-testid="select-item-photo">
+                          {itemPhotos.map((item) => <option key={item.id} value={item.id}>{item.name}{item.bestseller ? ' · Bestseller' : ''}</option>)}
+                        </select>
+                      </label>
+                    )}
+                    <label>Offer<input value={form.offer} onChange={(e) => set('offer', e.target.value)} data-testid="input-offer" /></label>
+                    <Warn hits={findViolations(form.offer, neverSay)} />
+                    <div className="two-col">
+                      <label>Budget (RM) · cap RM{business?.brandKit.monthlyAdBudgetCapRM}<input type="number" min={0} step="1" value={form.budget} onChange={(e) => set('budget', e.target.value)} data-testid="input-budget" />
+                        {Number(form.budget) > (business?.brandKit.monthlyAdBudgetCapRM ?? 0) && <span className="never-warn">Budget exceeds the business cap.</span>}
+                      </label>
+                      <div className="channels" role="group" aria-label="Channels">
+                        <span>Channels</span>
+                        {(['facebook', 'instagram'] as const).map((c) => (
+                          <label key={c} className="check"><input type="checkbox" checked={form.channels.includes(c)} onChange={() => toggle(c)} data-testid={`check-${c}`} />{c === 'facebook' ? 'Facebook' : 'Instagram'}</label>
+                        ))}
+                        {['WhatsApp', 'TikTok'].map((c) => <label key={c} className="check off"><input type="checkbox" disabled />{c}<em>soon</em></label>)}
+                      </div>
+                    </div>
+                  </section>
+                  {draft.copy.rationale && <p className="rationale"><span>Why this copy</span>{draft.copy.rationale}</p>}
                 </fieldset>
                 <PosterPreview
+                  key={businessId}
                   business={business}
                   headline={form.headline}
                   offer={form.offer}
                   cta={form.cta}
                   weatherLabel={weatherLabel}
-                  posterArt={(draft.copy as { posterArt?: string }).posterArt}
-                  productImage={itemPhotos.find((item) => form.offer.toLowerCase().includes(item.name.toLowerCase()))?.imageDataUrl
-                    || itemPhotos.find((item) => item.id === itemPhotoId)?.imageDataUrl}
+                  productImage={(menuItemForOffer(form.offer, itemPhotos) ?? itemPhotos.find((item) => item.id === itemPhotoId))?.imageDataUrl}
                 />
               </div>
 

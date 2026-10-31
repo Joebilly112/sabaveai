@@ -8,7 +8,7 @@ type StepperProps = {
 
 export function Stepper({ steps, current }: StepperProps) {
   return (
-    <ol className="flex gap-4 overflow-x-auto pb-1" aria-label="Progress">
+    <ol className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Progress">
       {steps.map((step, index) => {
         const state = index < current ? 'complete' : index === current ? 'current' : 'upcoming';
         return (

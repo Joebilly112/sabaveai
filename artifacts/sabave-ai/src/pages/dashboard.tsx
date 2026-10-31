@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'wouter';
-import { Check, RefreshCw, Sparkles } from 'lucide-react';
+import { Check, RefreshCw } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   getListActivityLogQueryKey,
@@ -13,13 +13,13 @@ import {
   useTriggerSignal,
 } from '@workspace/api-client-react';
 import type { Business, CampaignDraft, LogEntry, TriggerResult } from '@workspace/api-client-react';
-import { OptionCard } from '@/components/OptionCard';
+import { CampaignOptionList } from '@/components/CampaignOptionList';
 import { AppHeader } from '@/components/AppHeader';
 import { SabaveLogo } from '@/components/SabaveLogo';
 import { CampaignStudio } from '@/components/CampaignStudio';
 import { ForecastStrip } from '@/components/dashboard/forecast-strip';
 import { WeatherMap } from '@/components/dashboard/weather-map';
-import { formatDay, formatStamp, malaysiaToday, peakDay, scrollToSection } from '@/components/dashboard/format';
+import { daysUntil, formatDay, formatStamp, malaysiaToday, peakDay, scrollToSection } from '@/components/dashboard/format';
 import { asArray } from '@/lib/as-array';
 import { listBusinessesQuery } from '@/lib/session-api';
 import { apiErrorInfo, useWorkspace } from '@/lib/workspace';
@@ -56,10 +56,13 @@ function averageAlertToPublishMinutes(logs: LogEntry[], drafts: CampaignDraft[])
   return samples.reduce((sum, value) => sum + value, 0) / samples.length;
 }
 
-function minutesLabel(value: number | null) {
-  if (value === null) return '—';
-  if (value < 1) return '< 1';
-  return String(Math.round(value));
+function minutesLabel(value: number) {
+  return value < 1 ? '< 1' : String(Math.round(value));
+}
+
+function daysAheadLabel(days: number) {
+  if (days === 0) return 'Today';
+  return days === 1 ? '1 day' : `${days} days`;
 }
 
 function postIdsOf(draft: CampaignDraft) {
@@ -103,6 +106,12 @@ export default function Dashboard() {
     request: { headers: { 'x-user-id': userId } },
   });
   const businessDrafts = asArray<CampaignDraft>(journeyDraftsQuery.data);
+  // Shops live in server memory, so a 404 means the API restarted without this one. Reload the list and setup takes over.
+  const draftsStatus = (journeyDraftsQuery.error as { status?: number } | null)?.status;
+  const reloadBusinesses = businessesQuery.refetch;
+  useEffect(() => {
+    if (draftsStatus === 404) void reloadBusinesses();
+  }, [draftsStatus, reloadBusinesses]);
   const trigger = useTriggerSignal({ request: { headers: { 'x-user-id': userId } } });
   const generate = useGenerateDraft({ request: { headers: { 'x-user-id': userId } } });
   const aiStatus = useGetAIStatus();
@@ -183,6 +192,7 @@ export default function Dashboard() {
   const peak = forecast ? peakDay(forecastDays, alert?.peakDate) : undefined;
   const publishedCount = businessDrafts.filter((draft) => draft.status === 'published').length;
   const avgMinutes = averageAlertToPublishMinutes(asArray<LogEntry>(activityQuery.data), businessDrafts);
+  const firstHazeDay = alert ? asArray<string>(alert.affectedDates)[0] : undefined;
   const tone = publishedDraft ? 'published' : pendingDrafts.length ? 'pending' : alert?.peakLevelLabel === 'Very Unhealthy' ? 'severe' : alert ? 'alert' : 'clear';
 
   useEffect(() => {
@@ -363,34 +373,27 @@ export default function Dashboard() {
               <section id="campaign-options" aria-labelledby="options-heading" data-testid="campaign-options">
                 <div className="options-head dash-options-head">
                   <div>
-                    <h3 id="options-heading">Ready-made campaigns for this haze</h3>
-                    <p>Options come from your Brand Kit. AI only writes the copy.</p>
+                    <h3 id="options-heading">Choose one campaign</h3>
+                    <p>From your Brand Kit. Preparing writes the poster. You still approve it.</p>
                   </div>
-                </div>
-                <div className="ai-toggle-row" data-testid="ai-toggle-row">
-                  <label className={`ai-toggle ${aiConfigured ? '' : 'off'}`}>
-                    <input type="checkbox" role="switch" aria-checked={aiOn} checked={aiOn} disabled={!aiConfigured || !!preparing} onChange={(e) => setUseAI(e.target.checked)} aria-describedby="ai-toggle-help" data-testid="toggle-use-ai" />
-                    <span className="ai-switch" aria-hidden="true"><i /></span>
-                    <span><Sparkles size={13} /> Write copy with AI</span>
-                  </label>
-                  <span id="ai-toggle-help" className="ai-help" data-testid="text-ai-status">
-                    {aiStatus.isLoading ? 'Checking AI availability…' : aiConfigured ? `DeepSeek${aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''} · falls back to templates if it fails` : 'AI copy is unavailable: no DeepSeek API key is configured. Template copy will be used.'}
-                  </span>
                 </div>
                 {campaignOptions.length > 0 ? (
-                  <div className="options-grid">
-                    {campaignOptions.map((option, index) => (
-                      <OptionCard
-                        option={option}
-                        index={index}
-                        key={option.id}
-                        preparing={preparing === option.id}
-                        preparingLabel={aiOn ? 'Writing with AI…' : 'Preparing…'}
-                        disabled={!!preparing}
-                        onPrepare={() => prepare(alert.id, option.id)}
-                      />
-                    ))}
-                  </div>
+                  <CampaignOptionList
+                    options={campaignOptions}
+                    preparing={!!preparing}
+                    preparingLabel={aiOn ? 'Writing with AI…' : 'Preparing…'}
+                    onPrepare={(optionId) => prepare(alert.id, optionId)}
+                    aside={(
+                      <div className="ai-toggle-row" data-testid="ai-toggle-row">
+                        <label className={`ai-toggle ${aiConfigured ? '' : 'off'}`}>
+                          <input type="checkbox" role="switch" aria-checked={aiOn} checked={aiOn} disabled={!aiConfigured || !!preparing} onChange={(e) => setUseAI(e.target.checked)} data-testid="toggle-use-ai" />
+                          <span className="ai-switch" aria-hidden="true"><i /></span>
+                          <span>Write copy with AI (DeepSeek)</span>
+                        </label>
+                        {!aiStatus.isLoading && !aiConfigured ? <span className="ai-help" data-testid="text-ai-status">No AI key, so template copy will be used.</span> : null}
+                      </div>
+                    )}
+                  />
                 ) : (
                   <div className="info-card empty-state" data-testid="options-empty"><strong>No options for this warning</strong>Check the forecast again later.</div>
                 )}
@@ -401,26 +404,32 @@ export default function Dashboard() {
             {businessDrafts.length > 0 && <CampaignStudio key={businessId} business={selectedBusiness} selectedId={draftId} onSelect={setDraftId} weatherLabel={alert?.peakLevelLabel} />}
 
             <section className="dash-stats" aria-label="Shop stats">
-              <article className="dash-stat">
-                <h3>Campaigns published</h3>
-                <strong>{publishedCount}</strong>
-                <p>Simulated campaigns published for this shop.</p>
-              </article>
-              <article className="dash-stat">
-                <h3>Avg minutes alert → published</h3>
-                <strong>{minutesLabel(avgMinutes)}</strong>
-                <p>{avgMinutes === null ? 'Not enough published campaigns yet' : 'Average from activity-log timestamps, alert to publish.'}</p>
-              </article>
-              <article className="dash-stat">
-                <h3>Manual steps</h3>
-                <strong>—</strong>
-                <p>Staff drafts, the owner approves.</p>
-              </article>
-              <article className="dash-stat">
+              <article className="dash-stat" data-testid="stat-days-ahead">
                 <h3>Days ahead of haze</h3>
-                <strong>{alert ? alert.daysAhead : '—'}</strong>
-                <p>{!alert ? 'No active haze alert.' : alert.daysAhead === 0 ? 'The unhealthy spell starts today.' : 'Days until this haze spell starts.'}</p>
+                <strong>{firstHazeDay ? daysAheadLabel(daysUntil(firstHazeDay)) : 'None forecast'}</strong>
+                <p>{firstHazeDay ? `First unhealthy day: ${formatDay(firstHazeDay)}` : 'No unhealthy days in the next five.'}</p>
               </article>
+              {publishedCount > 0 ? (
+                <>
+                  <article className="dash-stat" data-testid="stat-published">
+                    <h3>Campaigns published</h3>
+                    <strong>{publishedCount}</strong>
+                    <p>Simulated campaigns published for this shop.</p>
+                  </article>
+                  {avgMinutes !== null ? (
+                    <article className="dash-stat" data-testid="stat-avg-minutes">
+                      <h3>Avg minutes alert → published</h3>
+                      <strong>{minutesLabel(avgMinutes)}</strong>
+                      <p>From alert to publish, using the activity log.</p>
+                    </article>
+                  ) : null}
+                </>
+              ) : (
+                <article className="dash-stat is-empty" data-testid="stats-empty">
+                  <h3>Campaign results</h3>
+                  <p>Appears after your first campaign</p>
+                </article>
+              )}
             </section>
           </div>
         )}
