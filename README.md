@@ -4,27 +4,8 @@ A predictive, weather-triggered marketing module for Orbyte. It watches the haze
 
 > Nobody buys an umbrella after they’re soaked. Yet that’s how small shops face the haze: they react once the tables are empty. sabave.ai predicts it.
 
-## Team Information
+## **SDC 2026 HACKATHON 6th place winner**
 
-| Field | Details |
-|---|---|
-| Team Name | Nabil The Goat |
-| Team Domain | Domain 2 (Alpha Red Solutions · Orbyte Smart SME Challenge) |
-| SDG Track (1–17) | SDG 8: Decent Work and Economic Growth (8.2, 8.3) · SDG 13: Climate Action (13.1) |
-| Team Leader | Nabil Hilmi Tsaqifi |
-| University | Monash University Malaysia |
-| Number of Members | 1 |
-
-## Links
-
-| Resource | Link |
-|---|---|
-| Live Demo (final) | https://sabave.web.app |
-| GitHub Repository | https://github.com/Joebilly112/sabaveai |
-| Final Pitch Deck | `submission/SDC2026_NabilTheGoat_PitchDeck.pptx` |
-| Final Demo Backup| https://youtu.be/t2y_jnwPD44?si=izgNzTw-tD-2RV3d |
-| Preliminary Demo Video | https://youtu.be/Fa1BEJwJaj8 |
-| RunPod Endpoint | Not used (no GPU workload) |
 
 ## Overview
 
@@ -185,20 +166,6 @@ Not used. sabave.ai has no GPU workload: AI inference goes through the hosted De
 - Every external dependency (weather API, LLM, Meta) needed a fallback so the demo journey never breaks.
 - Limiting AI to the one step where it adds value (writing copy) made the system easier to explain, test and trust.
 - Replit becoming unavailable mid-competition forced a move to Cursor and Firebase; keeping the API stateless behind a single `/api` rewrite made the migration quick.
-
-## Future Improvements
-
-- [ ] Pilot with 3–5 Klang Valley F&B outlets, measuring revenue protected
-- [ ] Managed database (Firestore or PostgreSQL via the Drizzle schema) and scheduled forecast checks
-- [ ] Real Meta Graph API and WhatsApp Business publishing
-- [ ] Rain, heat and flood signals; Chinese and Tamil copy
-- [ ] Campaign performance tracking
-
-## Team
-
-| Name | Role | GitHub |
-|---|---|---|
-| Nabil Hilmi Tsaqifi | Team Lead / Full-stack | Joebilly112 |
 
 ## Submission Checklist
 
