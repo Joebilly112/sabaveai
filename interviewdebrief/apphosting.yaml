@@ -1,0 +1,23 @@
+# Cloud Run caps for this product only. Region is chosen when the
+# App Hosting backend is created: asia-southeast1.
+runConfig:
+  minInstances: 0
+  maxInstances: 3
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+env:
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://interviewdebrief.web.app
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: FIREBASE_PROJECT_ID
+    value: skoolnow-ea6ff
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_DATABASE_ID
+    value: interviewdebrief
+    availability:
+      - RUNTIME
