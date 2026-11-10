@@ -1,0 +1,26 @@
+{
+  "firestore": {
+    "database": "interviewdebrief",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "site": "interviewdebrief",
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/data/**",
+      "**/.next/**"
+    ],
+    "frameworksBackend": {
+      "region": "asia-southeast1",
+      "cpu": 1,
+      "memory": "512MiB",
+      "concurrency": 80,
+      "minInstances": 0,
+      "maxInstances": 3
+    }
+  }
+}

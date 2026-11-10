@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f6f3ee;
+  color: #1c2433;
+}
+
+::selection {
+  background: #f0cb8c;
+  color: #121a2e;
+}
+
+.hero-wash {
+  background:
+    radial-gradient(900px 420px at 8% -10%, rgba(232, 165, 75, 0.2), transparent 58%),
+    radial-gradient(700px 420px at 100% 0%, rgba(27, 39, 68, 0.06), transparent 55%),
+    #f6f3ee;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
